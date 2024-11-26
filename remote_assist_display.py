@@ -7,8 +7,11 @@ import time
 import asyncio
 from hass_client import HomeAssistantClient
 import threading
+import logging
 
 CONFIG_FILE = "config.ini"
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 class HomeAssistantClient:
     def __init__(self, url, token):
@@ -20,11 +23,11 @@ class HomeAssistantClient:
         async with websockets.connect(self.url) as websocket:
             await websocket.send(json.dumps({"type": "auth", "access_token": self.token}))
             response = await websocket.recv()
-            print(response)
+            logger.debug(response)
 
             await websocket.send(json.dumps({"id": 1, "type": "subscribe_events", "event_type": "assistant_card_requested"}))
             response = await websocket.recv()
-            print(response)
+            logger.debug(response)
 
             while True:
                 event = await websocket.recv()
@@ -44,7 +47,7 @@ class Api:
 
     def listen(self):
         if not self.url or not self.default_dashboard_path:
-            print("URL or default dashboard path is missing.")
+            logger.warning("URL or default dashboard path is missing.")
             return
 
         window.load_url(f'{self.url}/{self.default_dashboard_path}')
@@ -60,10 +63,10 @@ class Api:
             client.set_event_callback(self.load_card)
             threading.Thread(target=client.start).start()
         except (json.JSONDecodeError, KeyError) as e:
-            print(f"Error getting access token: {e}")
+            logger.error(f"Error getting access token: {e}")
 
     def load_card(self, event):
-        print(event)
+        logger.debug(event)
 
         try:
             data = json.loads(event)
@@ -73,9 +76,9 @@ class Api:
                 new_url = f"{self.url}/{card_url}"
                 window.load_url(new_url)
             else:
-                print("Card URL  not found in event data.")
+                logger.debug("Card URL  not found in event data.")
         except json.JSONDecodeError as e:
-            print(f"Error decoding event data: {e}")
+            logger.error(f"Error decoding event data: {e}")
 
     def connect(self, url):
         print(f"Connecting to Home Assistant at: {url}")
@@ -101,7 +104,7 @@ class Api:
 
         with open(CONFIG_FILE, 'w') as configfile:
             saved_config.write(configfile)
-        print(f"URL saved: {url}")
+        logging.debug(f"URL saved: {url}")
 
     def save_config(self, form):
         saved_config = configparser.ConfigParser()
