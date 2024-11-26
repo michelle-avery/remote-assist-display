@@ -1,0 +1,30 @@
+<!-- login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Assistant Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+        form { display: inline-block; }
+        input[type="url"] { width: 300px; padding: 5px; margin: 10px 0; }
+        input[type="submit"] { padding: 5px 15px; }
+    </style>
+</head>
+<body>
+    <h1>Enter Home Assistant URL</h1>
+    <form id="urlForm">
+        <input type="url" id="haUrl" placeholder="https://your-home-assistant-url" required>
+        <br>
+        <input type="submit" value="Connect">
+    </form>
+    <script>
+        document.getElementById('urlForm').onsubmit = function(e) {
+            e.preventDefault();
+            var url = document.getElementById('haUrl').value;
+            window.pywebview.api.connect(url);
+        };
+    </script>
+</body>
+</html>
+
