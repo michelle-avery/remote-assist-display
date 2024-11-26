@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+        form { display: inline-block; }
+        input[type="text"], input[type="submit"] { width: 300px; padding: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Connecting to Dashboard...</h1>
+    <script>
+        window.addEventListener('pywebviewready', function() {
+               console.log('webview is ready');
+                window.pywebview.api.listen();
+        });
+    </script>
+</body>
+</html>
