@@ -9,7 +9,6 @@ pyqt5 = "*"
 qtpy = "*"
 pyqtwebengine = "*"
 websockets = "*"
-aiohttp = "*"
 hass-client = "*"
 
 [dev-packages]
