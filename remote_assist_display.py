@@ -44,6 +44,7 @@ class Api:
     def __init__(self):
         url = None
         default_dashboard_path = None
+        device_id = None
 
     def listen(self):
         if not self.url or not self.default_dashboard_path:
@@ -71,9 +72,15 @@ class Api:
         try:
             data = json.loads(event)
             card_url = data.get('event', {}).get('data', {}).get('card', {}).get('dashboard', {}).get('title')
+            device_id = data.get('event', {}).get('data', {}).get('device_id')
+
+            # if the card is not for this device, ignore it
+            if device_id != self.device_id:
+                return
 
             if card_url:
                 new_url = f"{self.url}/{card_url}"
+                logger.info(f"A request has been received for device {device_id} to load card: {card_url}")
                 window.load_url(new_url)
             else:
                 logger.debug("Card URL  not found in event data.")
@@ -134,12 +141,13 @@ if __name__ == "__main__":
 
     api.url = config.get('HomeAssistant', 'url', fallback=None)
     api.default_dashboard_path = config.get('HomeAssistant', 'default_dashboard_path', fallback=None)
+    api.device_id = config.get('HomeAssistant', 'assist_entity', fallback=None)
 
     if not api.url:
         # No URL configured, show the URL input screen
         window = webview.create_window("Home Assistant Login", 'screens/login.html', js_api=api, fullscreen=False)
 
-    elif not api.default_dashboard_path:
+    elif not api.default_dashboard_path or not  api.device_id:
         # URL configured, but no default dashboard path, show the configuration screen
         window = webview.create_window("Configure Home Assistant", 'screens/config.html', js_api=api, fullscreen=False)
 
