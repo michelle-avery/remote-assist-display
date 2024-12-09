@@ -12,6 +12,7 @@ websockets = "*"
 hass-client = "*"
 
 [dev-packages]
+pyinstaller = "*"
 
 [requires]
 python_version = "3.12"
