@@ -8,6 +8,7 @@ pywebview = "*"
 websockets = "*"
 hass-client = "*"
 pygobject = "*"
+flask = "*"
 
 [dev-packages]
 pyinstaller = "*"
