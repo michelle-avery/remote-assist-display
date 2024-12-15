@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Remote Assist Display Configuration</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+        form { display: inline-block; }
+        input[type="text"], input[type="submit"] { width: 300px; padding: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Configure Remote Assist Display</h1>
+    <form id="configForm" action="/save-config" method="POST">
+        <label for="assistEntity">Assist Entity:</label>
+        <input type="text" id="assistEntity" name="assistEntity" required placeholder="Enter assist entity">
+        <br>
+        <label for="defaultDashboard">Default Dashboard:</label>
+        <input type="text" id="defaultDashboard" name="defaultDashboard" required placeholder="Enter default dashboard URL">
+        <br>
+        <input type="submit" value="Save Configuration">
+    </form>
+</body>
+</html>

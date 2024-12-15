@@ -13,18 +13,11 @@
 </head>
 <body>
     <h1>Enter Home Assistant URL</h1>
-    <form id="urlForm">
-        <input type="url" id="haUrl" placeholder="https://your-home-assistant-url" required>
+    <form id="urlForm" action="/connect" method="post" >
+        <input type="url" id="haUrl" name=haUrl placeholder="https://your-home-assistant-url" required>
         <br>
         <input type="submit" value="Connect">
     </form>
-    <script>
-        document.getElementById('urlForm').onsubmit = function(e) {
-            e.preventDefault();
-            var url = document.getElementById('haUrl').value;
-            window.pywebview.api.connect(url);
-        };
-    </script>
 </body>
 </html>
 

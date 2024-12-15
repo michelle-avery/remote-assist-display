@@ -5,11 +5,10 @@ name = "pypi"
 
 [packages]
 pywebview = "*"
-pyqt5 = "*"
-qtpy = "*"
-pyqtwebengine = "*"
 websockets = "*"
 hass-client = "*"
+pygobject = "*"
+flask = "*"
 
 [dev-packages]
 pyinstaller = "*"

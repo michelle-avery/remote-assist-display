@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+        form { display: inline-block; }
+        input[type="text"], input[type="submit"] { width: 300px; padding: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Connecting to Dashboard...</h1>
+    <script>
+        window.addEventListener('pywebviewready', function() {
+               console.log('webview is ready');
+                fetch('/listen', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: 'Initiate listening' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response:', data);
+                if (data.success) {
+                    document.querySelector('h1').textContent = 'Successfully Connected!';
+                } else {
+                    document.querySelector('h1').textContent = 'Connection Failed.';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.querySelector('h1').textContent = 'An error occurred.';
+            });
+        });
+    </script>
+</body>
+</html>
