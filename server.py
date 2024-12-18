@@ -40,15 +40,20 @@ def add_header(response):
 
 @server.route('/')
 def landing():
-    # Redirect to hass_login if the entity  id and dashboard path are set, or render the config form to set them
+    # Check the config and redirect appropriately
     saved_config = configparser.ConfigParser()
     saved_config.read(CONFIG_FILE)
     if 'HomeAssistant' in saved_config:
         server.config['assist_entity'] = saved_config.get('HomeAssistant', 'assist_entity', fallback=None)
         server.config['default_dashboard'] = saved_config.get('HomeAssistant', 'default_dashboard_path', fallback=None)
         if server.config['assist_entity'] and server.config['default_dashboard']:
-            return redirect(url_for('hass_login'))
-    return render_template('config.html', token=webview.token)
+            # Everything's configured, so redirect to the dashboard
+            return redirect(url_for('dashboard'))
+        else:
+            # Configuration is incomplete, so redirect to the config page
+            return render_template('config.html', token=webview.token)
+    # We don't have a saved url, so redirect to the login page
+    return redirect(url_for('hass_login'))
 
 @server.route('/save-config', methods=['POST'])
 def save_config():
@@ -76,14 +81,6 @@ def save_config():
 
 @server.route('/hass-login', methods=['GET'])
 def hass_login():
-    # Render the login form if the URL is not set, or redirect to dashboard if it is
-    saved_config = configparser.ConfigParser()
-    saved_config.read(CONFIG_FILE)
-
-    if 'HomeAssistant' not in saved_config:
-        return redirect(url_for('landing'))
-    elif 'url' in saved_config['HomeAssistant']:
-        return redirect(url_for('dashboard'))
     return render_template('login.html', token=webview.token)
 
 @server.route('/connect', methods=['POST'])
