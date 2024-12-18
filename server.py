@@ -21,7 +21,6 @@ if not os.path.exists(gui_dir):  # frozen executable path
 server = Flask(__name__, static_folder=gui_dir, template_folder=gui_dir)
 server.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1  # disable caching
 
-
 def verify_token(function):
     @wraps(function)
     def wrapper(*args, **kwargs):
@@ -45,9 +44,9 @@ def landing():
     saved_config = configparser.ConfigParser()
     saved_config.read(CONFIG_FILE)
     if 'HomeAssistant' in saved_config:
-        assist_entity = saved_config.get('HomeAssistant', 'assist_entity', fallback=None)
-        default_dashboard = saved_config.get('HomeAssistant', 'default_dashboard_path', fallback=None)
-        if assist_entity and default_dashboard:
+        server.config['assist_entity'] = saved_config.get('HomeAssistant', 'assist_entity', fallback=None)
+        server.config['default_dashboard'] = saved_config.get('HomeAssistant', 'default_dashboard_path', fallback=None)
+        if server.config['assist_entity'] and server.config['default_dashboard']:
             return redirect(url_for('hass_login'))
     return render_template('config.html', token=webview.token)
 
@@ -65,6 +64,10 @@ def save_config():
 
     saved_config['HomeAssistant']['assist_entity'] = assist_entity
     saved_config['HomeAssistant']['default_dashboard_path'] = default_dashboard
+
+   # Also set the values on the server object so they can be accessed later
+    server.config['assist_entity'] = assist_entity
+    server.config['default_dashboard'] = default_dashboard
 
     with open(CONFIG_FILE, 'w') as configfile:
         saved_config.write(configfile)
@@ -94,6 +97,9 @@ def connect():
 
         saved_config['HomeAssistant']['url'] = url
 
+        # Also save the URL on the Server object
+        server.config['url'] = url
+
         with open(CONFIG_FILE, 'w') as configfile:
             saved_config.write(configfile)
         print(f"URL saved: {url}")
@@ -117,10 +123,8 @@ def dashboard():
 
 @server.route('/listen', methods=['POST'])
 def listen():
-    saved_config = configparser.ConfigParser()
-    saved_config.read(CONFIG_FILE)
-    url = saved_config.get('HomeAssistant', 'url')
-    dashboard = saved_config.get('HomeAssistant', 'default_dashboard_path')
+    url = server.config['url']
+    dashboard = server.config['default_dashboard']
     webview.windows[0].load_url(f'{url}/{dashboard}')
     token = webview.windows[0].evaluate_js("""
                 localStorage.getItem('hassTokens')
@@ -137,10 +141,9 @@ def load_card(event):
     data = json.loads(event)
     card_url = data.get('event', {}).get('data', {}).get('result', {}).get('response', {}).get('card', {}).get('dashboard', {}).get('title')
     device_id = data.get('event', {}).get('data', {}).get('device_id')
-    saved_config = configparser.ConfigParser()
-    saved_config.read(CONFIG_FILE)
-    entity_id = saved_config.get('HomeAssistant', 'assist_entity')
-    hass_url = saved_config.get('HomeAssistant', 'url')
+    entity_id = server.config['assist_entity']
+    hass_url = server.config['url']
+
     if device_id != entity_id:
         return
     if card_url:
