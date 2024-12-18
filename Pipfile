@@ -8,7 +8,8 @@ pywebview = "*"
 websockets = "*"
 hass-client = "*"
 pygobject = "*"
-flask = "*"
+zeroconf = "*"
+flask = {extras = ["async"], version = "*"}
 
 [dev-packages]
 pyinstaller = "*"

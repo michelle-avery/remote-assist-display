@@ -9,6 +9,7 @@ from flask import Flask, request, render_template, redirect, url_for
 
 import  webview
 
+import app
 from home_assistant import HomeAssistantClient
 
 CONFIG_FILE = "config.ini"
@@ -40,8 +41,9 @@ def add_header(response):
     return response
 
 @server.route('/')
-def landing():
+async def landing():
     # Redirect to hass_login if the entity  id and dashboard path are set, or render the config form to set them
+    await app.initialize()
     saved_config = configparser.ConfigParser()
     saved_config.read(CONFIG_FILE)
     if 'HomeAssistant' in saved_config:
@@ -50,7 +52,6 @@ def landing():
         if assist_entity and default_dashboard:
             return redirect(url_for('hass_login'))
     return render_template('config.html', token=webview.token)
-
 @server.route('/save-config', methods=['POST'])
 def save_config():
     assist_entity = request.form.get('assistEntity')
