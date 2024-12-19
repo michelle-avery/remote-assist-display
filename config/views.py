@@ -1,4 +1,5 @@
 from . import bp
+from dashboard.navigate import load_dashboard
 from flask import render_template, request, redirect, url_for, current_app
 import configparser
 import time
@@ -69,7 +70,7 @@ def  connect():
 
     url = request.form.get("haUrl")
 
-    webview.windows[0].load_url(url)
+    load_dashboard(url)
 
     while True:
         result = webview.windows[0].evaluate_js("""

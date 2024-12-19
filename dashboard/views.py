@@ -3,10 +3,9 @@ from flask import current_app, render_template
 import webview
 import asyncio
 import json
-import threading
 from hass_client import HomeAssistantClient
 
-load_card_timer = None
+from .navigate import load_card, load_dashboard
 
 @bp.route("/", methods=["GET"])
 def dashboard():
@@ -16,7 +15,7 @@ def dashboard():
 async def listen():
     url = current_app.config["url"]
     dashboard = current_app.config["default_dashboard"]
-    webview.windows[0].load_url(f"{url}/{dashboard}")
+    load_dashboard(f"{url}/{dashboard}")
     retry_limit = 10
     for _ in range(retry_limit):
         token = webview.windows[0].evaluate_js("""
@@ -37,26 +36,3 @@ async def listen():
     await listener_task
     return "Listening for events..."
 
-def load_card(event):
-    global load_card_timer
-    card_url = event.get("data", {}).get("result", {}).get("response", {}).get("card", {}).get("dashboard", {}).get("title")
-    device_id = event.get("data", {}).get("device_id")
-    entity_id = current_app.config["assist_entity"]
-    hass_url = current_app.config["url"]
-
-    if device_id != entity_id:
-        return
-    if card_url:
-        new_url = f"{hass_url}/{card_url}"
-        default_dashboard_url = f"{hass_url}/{current_app.config.get('default_dashboard')}"
-        webview.windows[0].load_url(new_url)
-        # Cancel the timer if it's already running
-        if load_card_timer:
-            load_card_timer.cancel()
-        # Start a new timer
-        load_card_timer = threading.Timer(30, load_dashboard, args=[default_dashboard_url])
-        load_card_timer.start()
-
-def load_dashboard(url):
-    print(f"Loading dashboard: {url}")
-    webview.windows[0].load_url(url)
