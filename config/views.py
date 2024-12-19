@@ -44,29 +44,30 @@ def save_config():
     with open(CONFIG_FILE, "w") as configfile:
         saved_config.write(configfile)
 
-    return redirect(url_for("config.hass_login"))
+    return redirect(url_for("dashboard.dashboard"))
 
 @bp.route("/hass-login", methods=["GET"])
 def hass_login():
     return render_template("login.html")
 
+def save_url(url):
+    saved_config = configparser.ConfigParser()
+    saved_config.read(CONFIG_FILE)
+
+    if "HomeAssistant" not in saved_config:
+        saved_config["HomeAssistant"] = {}
+
+    saved_config["HomeAssistant"]["url"] = url
+
+    # Also save the URL on the Server object
+    current_app.config["url"] = url
+
+    with open(CONFIG_FILE, "w") as configfile:
+        saved_config.write(configfile)
+    print(f"URL saved: {url}")
+
 @bp.route("/connect", methods=["POST"])
-def  connect():
-    def save_url(url):
-        saved_config = configparser.ConfigParser()
-        saved_config.read(CONFIG_FILE)
-
-        if "HomeAssistant" not in saved_config:
-            saved_config["HomeAssistant"] = {}
-
-        saved_config["HomeAssistant"]["url"] = url
-
-        # Also save the URL on the Server object
-        current_app.config["url"] = url
-
-        with open(CONFIG_FILE, "w") as configfile:
-            saved_config.write(configfile)
-        print(f"URL saved: {url}")
+def connect():
 
     url = request.form.get("haUrl")
 
@@ -78,7 +79,8 @@ def  connect():
         """)
         if result:
             save_url(url)
-            return redirect(url_for("dashboard.dashboard"))
+            load_dashboard(url_for("config.config"))
+            break
 
         time.sleep(1)
 
