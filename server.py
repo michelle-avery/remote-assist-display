@@ -1,3 +1,4 @@
+import asyncio
 import configparser
 import os
 import json
@@ -9,7 +10,7 @@ from flask import Flask, request, render_template, redirect, url_for
 
 import  webview
 
-from home_assistant import HomeAssistantClient
+from hass_client import HomeAssistantClient
 
 CONFIG_FILE = "config.ini"
 
@@ -46,6 +47,7 @@ def landing():
     if 'HomeAssistant' in saved_config:
         server.config['assist_entity'] = saved_config.get('HomeAssistant', 'assist_entity', fallback=None)
         server.config['default_dashboard'] = saved_config.get('HomeAssistant', 'default_dashboard_path', fallback=None)
+        server.config['url'] = saved_config.get('HomeAssistant', 'url', fallback=None)
         if server.config['assist_entity'] and server.config['default_dashboard']:
             # Everything's configured, so redirect to the dashboard
             return redirect(url_for('dashboard'))
@@ -119,7 +121,7 @@ def dashboard():
     return render_template('dashboard.html')
 
 @server.route('/listen', methods=['POST'])
-def listen():
+async def listen():
     url = server.config['url']
     dashboard = server.config['default_dashboard']
     webview.windows[0].load_url(f'{url}/{dashboard}')
@@ -130,14 +132,16 @@ def listen():
     ws_url = url.replace("http", "ws")
     ws_url = f"{ws_url}/api/websocket"
     client = HomeAssistantClient(ws_url, access_token)
-    client.set_event_callback(load_card)
-    threading.Thread(target=client.start).start()
+    await client.connect()
+    listener_task = asyncio.create_task(client.start_listening())
+    await client.subscribe_events(load_card, "custom_conversation_conversation_ended")
+    await listener_task
     return "Listening for events..."
 
+
 def load_card(event):
-    data = json.loads(event)
-    card_url = data.get('event', {}).get('data', {}).get('result', {}).get('response', {}).get('card', {}).get('dashboard', {}).get('title')
-    device_id = data.get('event', {}).get('data', {}).get('device_id')
+    card_url = event.get('data', {}).get('result', {}).get('response', {}).get('card', {}).get('dashboard', {}).get('title')
+    device_id = event.get('data', {}).get('device_id')
     entity_id = server.config['assist_entity']
     hass_url = server.config['url']
 

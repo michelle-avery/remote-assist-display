@@ -6,9 +6,9 @@ name = "pypi"
 [packages]
 pywebview = "*"
 websockets = "*"
-hass-client = "*"
 pygobject = "*"
 flask = "*"
+hass-client = "*"
 
 [dev-packages]
 pyinstaller = "*"
