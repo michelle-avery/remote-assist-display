@@ -125,9 +125,16 @@ async def listen():
     url = server.config['url']
     dashboard = server.config['default_dashboard']
     webview.windows[0].load_url(f'{url}/{dashboard}')
-    token = webview.windows[0].evaluate_js("""
-                localStorage.getItem('hassTokens')
-            """)
+    retry_limit = 10
+    for _ in range(retry_limit):
+        token = webview.windows[0].evaluate_js("""
+                    localStorage.getItem('hassTokens')
+                """)
+        if token:
+            break
+        await asyncio.sleep(1)
+    if not token:
+        raise Exception("Unable to fetch token from localStorage")
     access_token = json.loads(token)['access_token']
     ws_url = url.replace("http", "ws")
     ws_url = f"{ws_url}/api/websocket"
