@@ -1,12 +1,9 @@
-import logging
 from contextlib import redirect_stdout
 from io import StringIO
 
 from server import create_app
 
 import webview
-
-logger = logging.getLogger(__name__)
 
 
 if __name__ == '__main__':

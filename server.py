@@ -21,3 +21,4 @@ def create_app():
     app.register_blueprint(dashboard_bp)
 
     return app
+

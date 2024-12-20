@@ -45,8 +45,6 @@ def save_url(url):
     # Also save the URL on the Server object
     current_app.config["url"] = url
 
-    print(f"URL saved: {url}")
-
 @bp.route("/connect", methods=["POST"])
 def connect():
 

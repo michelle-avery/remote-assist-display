@@ -28,5 +28,4 @@ def load_card(event, expire_time=None):
 
 
 def load_dashboard(url):
-    print(f"Loading dashboard: {url}")
     webview.windows[0].load_url(url)
