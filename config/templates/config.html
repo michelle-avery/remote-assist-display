@@ -13,7 +13,13 @@
     <h1>Configure Remote Assist Display</h1>
     <form id="configForm" action="/config/save" method="POST">
         <label for="assistEntity">Assist Entity:</label>
-        <input type="text" id="assistEntity" name="assistEntity" required placeholder="Enter assist entity">
+        <select id="assistEntity" name="assistEntity" required>
+            {% for assistant  in voice_assistants %}
+                <option value="{{ assistant.device_id }}">
+                  {{ assistant.pipeline_entity | replace("select.", "") }}
+                </option>
+            {% endfor %}
+        </select>
         <br>
         <label for="defaultDashboard">Default Dashboard:</label>
         <input type="text" id="defaultDashboard" name="defaultDashboard" required placeholder="Enter default dashboard URL">
