@@ -9,6 +9,7 @@ websockets = "*"
 pygobject = "*"
 flask = "*"
 hass-client = "*"
+environs = "*"
 
 [dev-packages]
 pyinstaller = "*"

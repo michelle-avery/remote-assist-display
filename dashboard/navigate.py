@@ -5,7 +5,7 @@ from flask import current_app
 
 load_card_timer = None
 
-def load_card(event):
+def load_card(event, expire_time=None):
     global load_card_timer
     card_url = event.get("data", {}).get("result", {}).get("response", {}).get("card", {}).get("dashboard", {}).get("title")
     device_id = event.get("data", {}).get("device_id")
@@ -22,8 +22,9 @@ def load_card(event):
         if load_card_timer:
             load_card_timer.cancel()
         # Start a new timer
-        load_card_timer = threading.Timer(30, load_dashboard, args=[default_dashboard_url])
-        load_card_timer.start()
+        if expire_time:
+            load_card_timer = threading.Timer(expire_time, load_dashboard, args=[default_dashboard_url])
+            load_card_timer.start()
 
 
 def load_dashboard(url):

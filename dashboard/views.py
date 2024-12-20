@@ -15,8 +15,8 @@ def dashboard():
 async def listen():
     url = current_app.config["url"]
     dashboard = current_app.config["default_dashboard"]
-    load_dashboard(f"{url}/{dashboard}")
-    retry_limit = 10
+    load_dashboard(f"{url}/{dashboard}", current_app.config.get("DEFAULT_EXPIRE_TIME"))
+    retry_limit = current_app.config.get("TOKEN_RETRY_LIMIT")
     for _ in range(retry_limit):
         token = webview.windows[0].evaluate_js("""
                     localStorage.getItem('hassTokens')
