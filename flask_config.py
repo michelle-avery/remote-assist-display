@@ -9,3 +9,5 @@ class Config(object):
     DEFAULT_DASHBOARD_TIMEOUT =  env.int("DEFAULT_DASHBOARD_TIMEOUT", 30)
     # Number of times to retry fetching token
     TOKEN_RETRY_LIMIT = env.int("TOKEN_RETRY_LIMIT", 10)
+    # Event type to listen for
+    EVENT_TYPE = env.str("EVENT_TYPE", "custom_conversation_conversation_ended")
