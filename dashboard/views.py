@@ -1,13 +1,11 @@
 from . import bp
 from flask import current_app, render_template
 from functools import partial
-import webview
 import asyncio
-import json
-from hass_client import HomeAssistantClient
 from remote_display.websocket_helper import WebSocketHelper
 
-from .navigate import load_card, load_dashboard
+from .navigate import (load_card, load_dashboard,
+                       set_local_storage)
 
 @bp.route("/", methods=["GET"])
 def dashboard():
@@ -18,7 +16,7 @@ async def listen():
     url = current_app.config["url"]
     dashboard = current_app.config["default_dashboard"]
     load_dashboard(f"{url}/{dashboard}")
-
+    set_local_storage()
     websocket_helper = WebSocketHelper(url=url, retry_limit=current_app.config.get("TOKEN_RETRY_LIMIT"))
 
     await websocket_helper.connect_client()

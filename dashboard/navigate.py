@@ -7,6 +7,7 @@ load_card_timer = None
 
 def load_card(event, expire_time=None):
     global load_card_timer
+
     card_url = event.get("data", {}).get("result", {}).get("response", {}).get("card", {}).get("dashboard", {}).get("title")
     device_id = event.get("data", {}).get("device_id")
     entity_id = current_app.config["assist_entity"]
@@ -29,3 +30,10 @@ def load_card(event, expire_time=None):
 
 def load_dashboard(url):
     webview.windows[0].load_url(url)
+
+def set_local_storage():
+    key = current_app.config["DEVICE_NAME_KEY"]
+    value = current_app.config["device_name"]
+    webview.windows[0].evaluate_js(f"""
+        localStorage.setItem("{key}", "{value}")
+    """)

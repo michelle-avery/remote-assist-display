@@ -11,3 +11,6 @@ class Config(object):
     TOKEN_RETRY_LIMIT = env.int("TOKEN_RETRY_LIMIT", 10)
     # Event type to listen for
     EVENT_TYPE = env.str("EVENT_TYPE", "custom_conversation_conversation_ended")
+    # The local storage key to use for the device name. By default, this is the
+    # key used by browser_mod, to  maintain ViewAssist compatibility
+    DEVICE_NAME_KEY = env.str("DEVICE_NAME_KEY", "browser_mod-browser-id")

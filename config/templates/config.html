@@ -12,6 +12,9 @@
 <body>
     <h1>Configure Remote Assist Display</h1>
     <form id="configForm" action="/config/save" method="POST">
+        <label for="deviceName">Device Name:</label>
+        <input type="text" id="deviceName" name="deviceName" required placeholder="Enter device name">
+        <br>
         <label for="assistEntity">Assist Entity:</label>
         <select id="assistEntity" name="assistEntity" required>
             {% for assistant  in voice_assistants %}
