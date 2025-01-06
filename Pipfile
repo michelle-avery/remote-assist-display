@@ -7,7 +7,7 @@ name = "pypi"
 pywebview = "*"
 websockets = "*"
 pygobject = "*"
-flask = "*"
+flask = {extras = ["async"], version = "*"}
 hass-client = "*"
 environs = "*"
 
