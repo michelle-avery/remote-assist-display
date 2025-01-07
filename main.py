@@ -11,4 +11,4 @@ if __name__ == '__main__':
     with redirect_stdout(stream):
         app = create_app()
         window = webview.create_window('Remote Assist Display', app)
-        webview.start(debug=True, private_mode=False)
+        webview.start(debug=app.debug, private_mode=False)
