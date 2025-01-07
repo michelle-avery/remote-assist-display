@@ -8,8 +8,8 @@ load_card_timer = None
 def load_card(event, expire_time=None):
     global load_card_timer
 
-    card_url = event.get("data", {}).get("result", {}).get("response", {}).get("card", {}).get("dashboard", {}).get("title")
-    device_id = event.get("data", {}).get("device_id")
+    card_url = event.get("data", {}).get("url")
+    device_id = event.get("data", {}).get("target_device")
     entity_id = current_app.config["assist_entity"]
     hass_url = current_app.config["url"]
 
