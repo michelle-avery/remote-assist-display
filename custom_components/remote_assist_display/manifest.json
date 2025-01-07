@@ -1,0 +1,12 @@
+{
+  "domain": "remote_assist_display",
+  "name": "Remote Assist Display",
+  "codeowners": ["@michelle-avery"],
+  "config_flow": true,
+  "dependencies": [],
+  "after_dependencies": ["zeroconf"],
+  "documentation": "https://github.com/michelle-avery/remote-assist-display",
+  "issue_tracker": "https://github.com/michelle-avery/remote-assist-display/issues",
+  "zeroconf": ["_rad._tcp.local."],
+  "version": "0.0.1"
+}
