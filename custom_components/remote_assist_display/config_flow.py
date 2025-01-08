@@ -27,6 +27,9 @@ def remote_assist_display_config_option_schema(
                 "assist_entity_id", default=options.get("assist_entity_id", None)
             ): EntitySelector({"domain": "assist_satellite"}),
             vol.Optional("event_type", default=options.get("event_type", None)): str,
+            vol.Required(
+                "default_dashboard", default=options.get("default_dashboard", "")
+            ): str,
         }
     )
 
