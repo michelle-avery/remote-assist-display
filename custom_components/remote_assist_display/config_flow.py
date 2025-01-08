@@ -3,7 +3,6 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.components import zeroconf
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -71,38 +70,19 @@ class RemoteAssistDisplayConfigFlow(ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
-    async def async_step_zeroconf(
-        self, discovery_info: zeroconf.ZeroconfServiceInfo
-    ) -> ConfigFlowResult:
-        """Handle zeroconf discovery."""
-        if discovery_info.port is None:
-            return self.async_abort(reason="no_port")
-        name = discovery_info.name
-        await self.async_set_unique_id(name)
-        self._abort_if_unique_id_configured(
-            updates={CONF_HOST: discovery_info.host, CONF_PORT: discovery_info.port}
-        )
-        self._name = name
-        self._host = discovery_info.host
-        self._port = discovery_info.port
-        return await self.async_step_zeroconf_confirm()
-
-    async def async_step_zeroconf_confirm(
+    async def async_step_registration(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle a flow initiated by zeroconf."""
-        assert self._name is not None
-        assert self._host is not None
-        assert self._port is not None
-
-        if user_input is None:
-            return self.async_show_form(
-                step_id="zeroconf_confirm",
-                description_placeholders={"name": self._name},
-            )
+        """Handle a flow initiated by registration."""
+        await self.async_set_unique_id(user_input["id"])
+        self._abort_if_unique_id_configured(
+            updates={CONF_HOST: user_input["hostname"], CONF_PORT: 80}
+        )
+        self._name = user_input["hostname"]
+        self._host = user_input["hostname"]
+        self._port = 80
         return self.async_create_entry(
-            title=self._name,
-            data={CONF_HOST: self._host, CONF_PORT: self._port},
+            title=self._name, data={CONF_HOST: self._host, CONF_PORT: self._port}
         )
 
     @staticmethod

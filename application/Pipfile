@@ -10,10 +10,10 @@ pygobject = "*"
 flask = {extras = ["async"], version = "*"}
 hass-client = "*"
 environs = "*"
+requests = "*"
 
 [dev-packages]
 pyinstaller = "*"
 
 [requires]
 python_version = "3.12"
-python_full_version = "3.12.7"

@@ -4,12 +4,20 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry
+from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN
+from .http_api import RegistrationsView
 from .remote_assist_display import RemoteAssistDisplay
 from .service import async_setup_services
 
 PLATFORMS = [Platform.SENSOR]
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType):
+    """Set up the Remote Assist Display component."""
+    hass.http.register_view(RegistrationsView)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):

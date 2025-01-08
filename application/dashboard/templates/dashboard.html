@@ -14,6 +14,13 @@
     <script>
         window.addEventListener('pywebviewready', function() {
                console.log('webview is ready');
+               fetch('/register', {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json'
+                   },
+                   body: JSON.stringify({ message: 'Register'})
+               }).then(response => response.json()).then(data => {console.log('Response:', data)});
                fetch('/dashboard/listen', {
                 method: 'POST',
                 headers: {
