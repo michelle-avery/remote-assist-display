@@ -23,7 +23,6 @@ class RemoteAssistDisplay:
         self._assist_device_id = None
         self._name = entry.title
         self._host = entry.data.get("host")
-        self._port = entry.data.get("port")
         self._event_type = entry.options.get("event_type")
         self._event_listener = None
         self._intent_sensor = None
