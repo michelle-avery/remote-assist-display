@@ -7,7 +7,7 @@ from homeassistant.helpers import device_registry
 from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN
-from .http_api import RegistrationsView
+from .http_api import RegistrationsView, ConfigurationView
 from .remote_assist_display import RemoteAssistDisplay
 from .service import async_setup_services
 
@@ -17,6 +17,7 @@ PLATFORMS = [Platform.SENSOR]
 async def async_setup(hass: HomeAssistant, config: ConfigType):
     """Set up the Remote Assist Display component."""
     hass.http.register_view(RegistrationsView)
+    hass.http.register_view(ConfigurationView)
     return True
 
 

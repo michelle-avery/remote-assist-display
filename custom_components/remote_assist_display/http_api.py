@@ -7,7 +7,7 @@ import voluptuous as vol
 
 from homeassistant.components.http import KEY_HASS, HomeAssistantView
 from homeassistant.components.http.data_validator import RequestDataValidator
-from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import config_validation as cv, device_registry as dr
 from homeassistant.util import slugify
 
 from .const import DOMAIN
@@ -34,7 +34,7 @@ class RegistrationsView(HomeAssistantView):
         device_id = data["id"]
         device_name = slugify(hostname)
 
-        await hass.async_create_task(
+        response = await hass.async_create_task(
             hass.config_entries.flow.async_init(
                 DOMAIN,
                 context={"source": "registration"},
@@ -45,7 +45,37 @@ class RegistrationsView(HomeAssistantView):
                 },
             )
         )
+        if response["type"] == "abort" and response["reason"] == "already_configured":
+            return self.json(
+                {"info": "Device already registered"},
+                HTTPStatus.OK,
+            )
+        if response["type"] == "create_entry":
+            return self.json(
+                {"info": "Device registered"},
+                HTTPStatus.CREATED,
+            )
         return self.json(
             {},
-            status=HTTPStatus.CREATED,
+            HTTPStatus.INTERNAL_SERVER_ERROR,
         )
+
+
+class ConfigurationView(HomeAssistantView):
+    """A view that returns the configuration options for a Remote Assist Display device."""
+
+    url = "/api/remote_assist_display/config/{device_id}"
+    name = "api:remote_assist_display:config"
+
+    async def get(self, request: Request, device_id: str) -> Response:
+        """Return the options for the specified Remote Assist Display device."""
+        hass = request.app[KEY_HASS]
+        config_entry = hass.config_entries.async_entry_for_domain_unique_id(
+            DOMAIN, device_id
+        )
+        if not config_entry:
+            return self.json(
+                {"error": "Device not found"},
+                HTTPStatus.NOT_FOUND,
+            )
+        return self.json(dict(config_entry.options), HTTPStatus.OK)

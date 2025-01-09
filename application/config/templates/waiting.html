@@ -1,0 +1,31 @@
+<!-- login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Configuration Pending</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+    </style>
+</head>
+<body>
+    <h1>Waiting for configuration...</h1>
+    <p>
+      Device has been registered but requires further configuration.
+    </p>
+    <script>
+        window.addEventListener('pywebviewready', function() {
+            fetch('/hass-config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            }).then(response => response.json())
+                .then(data => {
+                    console.log('Response:', data);
+                })
+        })
+    </script>
+</body>
+</html>
+
