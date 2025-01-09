@@ -39,7 +39,7 @@ async def connect():
     load_dashboard(url)
 
     try:
-        await fetch_access_token(retries=current_app.config.get("TOKEN_RETRY_LIMIT"))
+        await fetch_access_token(url=url, retries=current_app.config.get("TOKEN_RETRY_LIMIT"))
         # Save the URL to our config file
         save_url(url)
         # Register the device.
