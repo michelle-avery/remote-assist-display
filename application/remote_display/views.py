@@ -22,6 +22,7 @@ async def register():
     token = await fetch_access_token()
     headers = {"Authorization": f"Bearer {token}"}
     data = {"hostname": hostname, "id": id}
+    # Todo: A 404 here indicates the component is not installed on the Home Assistant instance. We should warn the user.
     response = requests.post(f"{url}/api/remote_assist_display/register", json=data, headers=headers)
     return response.json(), response.status_code
 

@@ -13,30 +13,45 @@ The custom component should be installed in your Home Assistant instance prior t
 ### Installation
 #### With HACS
 * Install [HACS](https://hacs.xyz/docs/use/) if you have not already
-* Click [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=michelle-avery&category=integration&repository=remote-assist-display)  to add this as a custom repository, or add it manually.
+* Click 
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.
+](https://my.home-assistant.io/badges/hacs_repository.svg)
+](https://my.home-assistant.io/redirect/hacs_repository/?owner=michelle-avery&category=integration&repository=remote-assist-display)  
+to add this as a custom repository, or add it manually.
 * Click "Add" to confirm, and then click "Download" to download and install the integration
 * Restart Home Assistant
 
 #### Manual Installation
-* Copy the contents of [custom_components/remote_assist_display](/custom_components/remote_assist_display) to `config/custom_components/remote_assist_display` in your Home Assistant instance
+* Copy the contents of [custom_components/remote_assist_display](/custom_components/remote_assist_display) to 
+`config/custom_components/remote_assist_display` in your Home Assistant instance
 * Restart Home Assistant
 
 #### For development
-* Clone this repository to your local machine, and mount the `custom_components/remote_assist_display` directory to `config/custom_components/remote_assist_display` in your Home Assistant instance by adding a mount in your devcontainer.json file like this (make sure to change the source to match your environment):
+* Clone this repository to your local machine, and mount the `custom_components/remote_assist_display` directory 
+to `config/custom_components/remote_assist_display` in your Home Assistant instance by adding a mount in your 
+devcontainer.json file like this (make sure to change the source to match your environment):
 ```json
   "mounts": [
       "source=${localENV:HOME}/remote-assist-display/custom_components/remote_assist_display,target=${containerWorkspaceFolder}/config/custom_components/remote_assist_display,type=bind"
   ]
 ```
-Once you  have the  component installed, you can proceed to install the GUI application on the device you wish to use as a remote display.
+Once you  have the  component installed, you can proceed to install the GUI application on the device you wish to use 
+as a remote display.
     
+## The Remote Assist Display GUI Application
+The GUI application is a Python application that uses Pywebview to display a web page in a window. The application 
+connects to HomeAssistant and accepts commands to navigate to different dashboards within home assistant, or different 
+URLs altogether. Compared to using the similar browser_mod approach, Remote Assist Display requires more initial setup, 
+but removes the need for the user to interact with the display prior to use after a restart.
 
-## Requirements
-pkg-config 
-cmake
-libcairo2-dev
-libgirepository1.0-dev
-python3-gi 
-python3-gi-cairo 
-gir1.2-gtk-3.0 
-gir1.2-webkit2-4.1
+### Installation
+
+#### From Source
+* Clone this repository to your local machine
+* Install the required dependencies. This list is a work in progress, so if you find any missing, please open 
+an [issue](/issues)
+  * For debian-based systems:
+  `sudo apt-get install pkg-config cmake libcairo2-dev libgirepository1.0-dev 
+  python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-webkit2-4.1`
+  * For Alpine-based systems (including Postmarketos):
+  `sudo apk add g++ cmake pkgconf py3-cairo-dev gobject-introspection-dev`
