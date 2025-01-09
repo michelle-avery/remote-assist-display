@@ -8,16 +8,11 @@ RUN apk add \
     cmake \
     pkgconf \
     py3-cairo-dev \
-    gobject-introspection-dev
+    gobject-introspection-dev \
+    webkit2gtk-4.1-dev
 
 RUN pip install --no-cache-dir pipenv
 
-#ADD Pipfile .
-
-#RUN pipenv install --dev
-#RUN  pipenv run pyinstaller main.py --name remote-assist-display-app --add-data config/templates:config/templates --onefile
-
-#CMD ["/bin/sh"]
 ENTRYPOINT ["sh", "-c", "\
   pipenv install --dev && \
   pipenv run pyinstaller main.py \

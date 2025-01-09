@@ -1,6 +1,6 @@
 from hass_client import HomeAssistantClient
 
-from application.remote_display.auth import fetch_access_token
+from remote_display.auth import fetch_access_token
 
 
 class WebSocketHelper:
