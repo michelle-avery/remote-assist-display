@@ -35,8 +35,12 @@ devcontainer.json file like this (make sure to change the source to match your e
       "source=${localENV:HOME}/remote-assist-display/custom_components/remote_assist_display,target=${containerWorkspaceFolder}/config/custom_components/remote_assist_display,type=bind"
   ]
 ```
-Once you  have the  component installed, you can proceed to install the GUI application on the device you wish to use 
-as a remote display.
+#### Completing the installation
+There is currently one more step needed as a workaround. Devices running the Remote Assist Display GUI application
+should automatically be registered in Home Assistant, but the endpoints for this are currently not being loaded unless a
+device already exists. To work around this, you can create a temporary device in Home Assistant. This can be done by going
+to Integrations, clicking "Add Integration", searching for "Remote Assist Display", and adding a temporary device. Once
+your first device is added, the endpoints will be loaded and you can remove the temporary device.
     
 ## The Remote Assist Display GUI Application
 The GUI application is a Python application that uses Pywebview to display a web page in a window. The application 
@@ -55,3 +59,51 @@ an [issue](/issues)
   python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-webkit2-4.1`
   * For Alpine-based systems (including Postmarketos):
   `sudo apk add g++ cmake pkgconf py3-cairo-dev gobject-introspection-dev`
+  * For all systems:
+    * A Python 3.12+ environment
+    * [Pipenv](https://pipenv.pypa.io/en/latest/installation.html)
+* Run `pipenv install` to install the required Python packages
+* Run the application with `pipenv run python main.py`. If you just see a white screen when the application launches
+  (this will be the  case with  ThinkSmart View devices, and potentially others as well), preface the command with 
+`MESA_GLES_VERSION_OVERRIDE=2.0`
+
+### Creating a Standalone Executable for the ThinkSmart View
+The ThinkSmart View devices have become popular for applications like this due to their currently low price point.
+These devices can also be flashed to run PostmarketOS, which allows for more flexibility in the applications that can
+be installed. Given the limited disk space on these devices, and the additional dependencies needed, however, this
+project provides the ability to create a standalone executable that can be run on the device without needing to install
+dependencies, check out the repository, etc. This will eventually be published with each release, but if you'd like to
+create your own in the interim, and you have docker installed on a workstation:
+* Clone this repository to your local machine
+* The ThinkSmart Views run on ARM processors, so assuming your workstation is x86, you'll need to enable quemu
+  emulation. This can be done by running `docker run --rm --privileged multiarch/qemu-user-static --reset -p yes`
+* Run `docker build --platform linux/arm64 . -t rad-builder` to build the builder image
+* From the application directory, run `docker run --rm -v $(pwd):/usr/src/app --platform linux/arm64 rad-builder` 
+to build the standalone executable. This will create a file called `remote_assist_display` in the `dist` directory under
+your current directory.
+* Copy the `remote_assist_display` file to your ThinkSmart View device, and run it with 
+`MESA_GLES_VERSION_OVERRIDE=2.0 ./remote_assist_display`
+
+### Configuration
+* When the application starts up for the first time, it will prompt you to enter the URL of your Home Assistant 
+instance. You will then be directed to that instance to log in.
+* Once you've logged in to Home Assistant, you will be redirected to a page that lets you know the device is waiting 
+for a configuration. You can now configure the device in Home Assistant.
+* Go to Integrations, find the "Remote Assist Display" integration, and click on it. You should see a new device
+in addition to the temporary device you previously created. Click on the "Configure" button next to the new device.
+* Under "assist_entity_id", select the corresponding assist entity that this display will be used with.
+* The "event_type" functionality is not yet fully implemented, so you enter any placeholder text here.
+* For "default_dashboard", enter the relative path to the dashboard you'd like to display when the application starts.
+* Click submit to save the configuration, which should automatically be picked up by the device.
+
+## Known Issues
+This project is still in an early prototype stage. In addition to the usual implications (rapidly chanaging code base, 
+little error handling, etc.), there are a few known issues:
+* See the workaround above in the installation instructions for the custom component
+* Once the application registers itself to home assistant, it currently polls home assistant every 60 seconds until it
+finds a configuration with the default dashboard defined. This will be moved to a pub/sub model in the future, but for
+now, you'll need to wait up to 60 seconds after configuring the device in Home Assistant for the dashboard to load. Note
+that there's also no timeout on this polling, so you probably don't want to leave it in this state indefinitely.
+* The devices currently only check for their configuration at startup and during the initial configuration. This means
+if you change the configuration in Home Assistant, you'll need to restart the application on the device for the changes
+to take effect.
