@@ -2,6 +2,7 @@
 
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import device_registry
 
 
 import voluptuous as vol
@@ -32,6 +33,9 @@ def async_setup_services(hass) -> None:
     async def navigate(service_call):
         """Make a specific device navigate to the specified URL."""
         device = service_call.data.get("target_device")
+        dr = device_registry.async_get(hass)
+        device_entry = dr.async_get(device)
+        device_id = dict(device_entry.identifiers).get(DOMAIN)
         url = service_call.data.get("url")
         event = NAVIGATE_EVENT
-        hass.bus.async_fire(event, event_data={"target_device": device, "url": url})
+        hass.bus.async_fire(event, event_data={"target_device": device_id, "url": url})
