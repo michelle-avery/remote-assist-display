@@ -2,6 +2,7 @@
   "domain": "remote_assist_display",
   "name": "Remote Assist Display",
   "codeowners": ["@michelle-avery"],
+  "integration_type": "hub",
   "config_flow": true,
   "dependencies": ["http", "websocket_api"],
   "after_dependencies": ["cloud"],
