@@ -53,7 +53,7 @@ but removes the need for the user to interact with the display prior to use afte
 #### From Source
 * Clone this repository to your local machine
 * Install the required dependencies. This list is a work in progress, so if you find any missing, please open 
-an [issue](/issues)
+an [issue](https://github.com/michelle-avery/remote-assist-display/issues)
   * For debian-based systems:
   `sudo apt-get install pkg-config cmake libcairo2-dev libgirepository1.0-dev 
   python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-webkit2-4.1`
@@ -79,10 +79,10 @@ create your own in the interim, and you have docker installed on a workstation:
   emulation. This can be done by running `docker run --rm --privileged multiarch/qemu-user-static --reset -p yes`
 * Run `docker build --platform linux/arm64 . -t rad-builder` to build the builder image
 * From the application directory, run `docker run --rm -v $(pwd):/usr/src/app --platform linux/arm64 rad-builder` 
-to build the standalone executable. This will create a file called `remote_assist_display` in the `dist` directory under
+to build the standalone executable. This will create a file called `remote-assist-display-app` in the `dist` directory under
 your current directory.
 * Copy the `remote_assist_display` file to your ThinkSmart View device, and run it with 
-`MESA_GLES_VERSION_OVERRIDE=2.0 ./remote_assist_display`
+`MESA_GLES_VERSION_OVERRIDE=2.0 ./remote-assist-display-app`
 
 ### Configuration
 * When the application starts up for the first time, it will prompt you to enter the URL of your Home Assistant 
