@@ -1,78 +1,188 @@
 """Remote Assist Display Class."""
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import Event, HomeAssistant, callback
-from homeassistant.helpers.device_registry import (
-    DeviceEntry,
-    async_get as async_get_device_registry,
-)
-from homeassistant.helpers.entity_registry import async_get as async_get_entity_registry
+import logging
+
+from homeassistant.components.websocket_api import event_message
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import device_registry, entity_registry
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+
+from .const import DATA_ADDERS, DATA_DISPLAYS, DOMAIN
+from .sensor import RADSensor
+from .text import DefaultDashboardText
+
+_LOGGER = logging.getLogger(__name__)
+
+
+class Coordinator(DataUpdateCoordinator):
+    def __init__(self, hass, display_id):
+        super().__init__(hass, _LOGGER, name="Remote Assist Display Coordinator")
+        self.display_id = display_id
 
 
 class RemoteAssistDisplay:
-    """Remote Assist Display Class."""
+    """Remote Assist Display Class.
+
+    Handles the Home Assistant device corresponding to a Remote Assist Display device.
+    """
 
     def __init__(
-        self, hass: HomeAssistant, entry: ConfigEntry, device: DeviceEntry
+        self,
+        hass: HomeAssistant,
+        display_id: str,
     ) -> None:
         """Initialize the Remote Assist Display device."""
-        self._hass = hass
-        self._configentry = entry
-        self._device = device
-        self._assist_entity_id = entry.options.get("assist_entity_id")
-        self._assist_device_id = None
-        self._name = entry.title
-        self._host = entry.data.get("host")
-        self._event_type = entry.options.get("event_type")
-        self._event_listener = None
-        self._intent_sensor = None
+        self.display_id = display_id
+        self.coordinator = Coordinator(hass, display_id)
+        self.entities = {}
+        self.data = {}
+        self.settings = {}
+        self._connections = []
 
-        if self._assist_entity_id:
-            self._get_assist_device_id()
+        self.update_entities(hass)
 
-        if self._event_type:
-            self._set_event_listener()
+    def update(self, hass, new_data):
+        """Update the Remote Assist Display device."""
+        self.data.update(new_data)
+        self.update_entities(hass)
+        self.coordinator.async_set_updated_data(self.data)
 
-    def _get_assist_device_id(self):
-        """Get the device ID for the assist satellite."""
-        entity_registry = async_get_entity_registry(self._hass)
-        assist_entity = entity_registry.async_get(self._assist_entity_id)
-        if assist_entity:
-            self._assist_device_id = assist_entity.device_id
+    def update_settings(self, hass, settings):
+        """Update the settings for the Remote Assist Display device."""
+        self.settings = settings
+        self.update_entities(hass)
 
-    def _set_event_listener(self):
-        """Set up an event listener for this device."""
+    def update_entities(self, hass):
+        """Create or update entities for this device."""
 
-        @callback
-        def handle_event(event: Event):
-            """Handle the event."""
-            if not self._intent_sensor:
+        coordinator = self.coordinator
+        display_id = self.display_id
+
+        def _assert_display_sensor(type, name, *properties, **kwargs):
+            """Create a sensor for this device if needed."""
+            if name in self.entities:
                 return
+            adder = hass.data[DOMAIN][DATA_ADDERS][type]
+            cls = {"sensor": RADSensor}[type]
+            new = cls(coordinator, display_id, name, *properties, **kwargs)
+            adder([new])
+            self.entities[name] = new
 
-            event_data = event.data
+        _assert_display_sensor("sensor", "current_url", "Current URL", icon="mdi:web")
 
-            # Update the intent sensor for this device if the event came from its corresponding assist satellite
-            if event_data.get("device_id") == self._assist_device_id:
-                self._intent_sensor.update_from_event(event_data["result"])
+        if "default_dashboard_path" not in self.entities:
+            adder = hass.data[DOMAIN][DATA_ADDERS]["text"]
+            new = DefaultDashboardText(coordinator, display_id, self)
+            adder([new])
+            self.entities["default_dashboard_path"] = new
 
-        # Remove any existing event listener
-        if self._event_listener:
-            self._event_listener()
-
-        # Set up a new event listener
-        self._event_listener = self._hass.bus.async_listen(
-            self._event_type, handle_event
+        hass.create_task(
+            self.send(
+                None,
+                display_entities={k: v.entity_id for k, v in self.entities.items()},
+            )
         )
 
-    def set_intent_sensor(self, sensor):
-        """Set the intent sensor for this device."""
-        self._intent_sensor = sensor
+    @callback
+    async def send(self, command, **kwargs):
+        """Send a command to the Remote Assist Display device."""
+        if self.connection is None:
+            return
 
-    def update_event_type(self, event_type: str):
-        """Update the event type for this device."""
-        self._event_type = event_type
-        if self._event_type:
-            self._set_event_listener()
-        elif self._event_listener:
-            self._event_listener()
-            self._event_listener = None
+        for connection, cid in self.connection:
+            connection.send_message(event_message(cid, {"command": command, **kwargs}))
+
+    def delete(self, hass):
+        """Delete this device."""
+        dr = device_registry.async_get(hass)
+        er = entity_registry.async_get(hass)
+
+        for e in self.entities.values():
+            er.async_remove(e.entity_id)
+
+        self.entities = {}
+
+        device = dr.async_get_device({(DOMAIN, self.display_id)})
+        dr.async_remove_device(device.id)
+
+    @property
+    def connection(self):
+        return self._connections
+
+    def open_connection(self, hass, connection, cid):
+        """Open a connection to the Remote Assist Display device."""
+        self._connections.append((connection, cid))
+        self.update(hass, {"connected": True})
+
+    def close_connection(self, hass, connection):
+        """Close a connection to the Remote Assist Display device."""
+        self._connections = list(
+            filter(lambda v: v[0] != connection, self._connections)
+        )
+        self.update(hass, {"connected": False})
+
+    # def _set_event_listener(self):
+    #     """Set up an event listener for this device."""
+
+    #     @callback
+    #     def handle_event(event: Event):
+    #         """Handle the event."""
+    #         if not self._intent_sensor:
+    #             return
+
+    #         event_data = event.data
+
+    #         # Update the intent sensor for this device if the event came from its corresponding assist satellite
+    #         if event_data.get("device_id") == self._assist_device_id:
+    #             self._intent_sensor.update_from_event(event_data["result"])
+
+    #     # Remove any existing event listener
+    #     if self._event_listener:
+    #         self._event_listener()
+
+    #     # Set up a new event listener
+    #     self._event_listener = self._hass.bus.async_listen(
+    #         self._event_type, handle_event
+    #     )
+
+    # def set_intent_sensor(self, sensor):
+    #     """Set the intent sensor for this device."""
+    #     self._intent_sensor = sensor
+
+    # def update_event_type(self, event_type: str):
+    #     """Update the event type for this device."""
+    #     self._event_type = event_type
+    #     if self._event_type:
+    #         self._set_event_listener()
+    #     elif self._event_listener:
+    #         self._event_listener()
+    #         self._event_listener = None
+
+
+def get_or_register_display(hass, display_id):
+    """Get or create a Remote Assist Display device."""
+    displays = hass.data[DOMAIN][DATA_DISPLAYS]
+    if display_id in displays:
+        return displays[display_id]
+
+    displays[display_id] = RemoteAssistDisplay(hass, display_id)
+    return displays[display_id]
+
+
+def delete_display(hass, display_id):
+    """Delete a Remote Assist Display device."""
+    display = get_or_register_display(hass, display_id)
+    if display:
+        display.delete(hass)
+        del hass.data[DOMAIN][DATA_DISPLAYS][display_id]
+    return display
+
+
+def get_display_by_connection(hass, connection):
+    """Get a Remote Assist Display device by connection."""
+    displays = hass.data[DOMAIN][DATA_DISPLAYS]
+
+    for k, v in displays.items():
+        if any(c[0] == connection for c in v._connections):
+            return v
+    return None

@@ -9,9 +9,7 @@ from homeassistant.config_entries import (
     ConfigFlowResult,
     OptionsFlow,
 )
-from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.selector import EntitySelector
 
 from .const import DOMAIN
 
@@ -24,27 +22,17 @@ def remote_assist_display_config_option_schema(
     return vol.Schema(
         {
             vol.Optional(
-                "assist_entity_id", default=options.get("assist_entity_id", None)
-            ): EntitySelector({"domain": "assist_satellite"}),
-            vol.Optional("event_type", default=options.get("event_type", None)): str,
-            vol.Required(
-                "default_dashboard", default=options.get("default_dashboard", "")
+                "default_dashboard_path",
+                default=options.get("default_dashboard_path", None),
             ): str,
-        }
-    )
-
-
-def remote_assist_display_config_schema(
-    hass: HomeAssistant,
-    entry: ConfigEntry,
-) -> vol.Schema:
-    """Return the config schema for Remote Assist Display."""
-    data = {}
-    if hasattr(entry, "data"):
-        data = entry.data
-    return vol.Schema(
-        {
-            vol.Required(CONF_HOST, default=data.get(CONF_HOST, "")): str,
+            vol.Optional(
+                "default_timeout_seconds",
+                default=options.get("default_timeout_seconds", None),
+            ): int,
+            vol.Optional(
+                "default_event_type",
+                default=options.get("default_event_type", None),
+            ): str,
         }
     )
 
@@ -72,16 +60,6 @@ class RemoteAssistDisplayConfigFlow(ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
-    async def async_step_registration(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Handle a flow initiated by registration."""
-        await self.async_set_unique_id(user_input["id"])
-        self._abort_if_unique_id_configured(updates={CONF_HOST: user_input["hostname"]})
-        self._name = user_input["hostname"]
-        self._host = user_input["hostname"]
-        return self.async_create_entry(title=self._name, data={CONF_HOST: self._host})
-
     @staticmethod
     @callback
     def async_get_options_flow(
@@ -90,29 +68,10 @@ class RemoteAssistDisplayConfigFlow(ConfigFlow, domain=DOMAIN):
         """Create the options flow."""
         return RemoteAssistDisplayOptionsFlowHandler()
 
-    async def async_step_reconfigure(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Handle reconfiguration."""
-        config_entry = self.hass.config_entries.async_get_entry(
-            self.context["entry_id"]
-        )
-        assert config_entry is not None
-        return await self.async_step_user()
-
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the initial step."""
-        if user_input is None:
-            options: dict[str, Any] = {}
-            if hasattr(self, "config_entry"):
-                options = self.config_entry.data
-            return self.async_show_form(
-                step_id="user",
-                data_schema=remote_assist_display_config_schema(self.hass, options),
-            )
-        return self.async_create_entry(
-            title=user_input[CONF_HOST],
-            data=user_input,
-        )
+        if self._async_current_entries():
+            return self.async_abort(reason="single_instance_allowed")
+        return self.async_create_entry(title="Remote Assist Display", data={})

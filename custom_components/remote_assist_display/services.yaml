@@ -1,19 +1,42 @@
-navigate:
+navigate_url:
   name: Navigate a target device to a specific URL
   description: >
     This service allows you to navigate a target device to a specific URL.
   fields:
-    target_device:
+    target:
+      name: Target
       description: The device to navigate.
       example: "remote_assist_display.living_room"
       required: true
       selector:
         device:
+          multiple: true
           filter:
             - integration: remote_assist_display
     url:
       description: The URL to navigate to.
       example: "https://www.home-assistant.io/"
+      required: true
+      selector:
+          text:
+navigate:
+  name: Navigate a target device to a specific home assistant path
+  description: >
+    This service allows you to navigate a target device to a specific home assistant path.
+  fields:
+    target:
+      name: Target
+      description: The device to navigate.
+      example: "remote_assist_display.living_room"
+      required: true
+      selector:
+        device:
+          multiple: true
+          filter:
+            - integration: remote_assist_display
+    path:
+      description: The target path.
+      example: "lovelace"
       required: true
       selector:
           text:
