@@ -1,7 +1,7 @@
 from contextlib import redirect_stdout
 from io import StringIO
 
-from server import create_app
+from remote_assist_display import create_app
 
 import webview
 

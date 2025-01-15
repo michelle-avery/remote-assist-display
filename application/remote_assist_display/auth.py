@@ -17,7 +17,7 @@ class TokenStorage:
     def clear_token(cls):
         cls._access_token = None
 
-async def fetch_access_token(retries=5, delay=1, window=0, url=None):
+async def fetch_access_token(retries=5, delay=1, window=0, url="http://localhost:8123"):
     token = TokenStorage.get_token()
     if token:
         return token
