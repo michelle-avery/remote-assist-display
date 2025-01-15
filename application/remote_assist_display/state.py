@@ -49,16 +49,13 @@ class DisplayState:
         """)
 
     def load_card(self, event, expire_time=None):
-        card_url = event.get("data", {}).get("url")
-        target_device_id = event.get("data", {}).get("target_device")
-        device_id = current_app.config["UNIQUE_ID"]
+        card_path = event.get("path")
+        if card_path and card_path.startswith("/"):
+            card_path = card_path[1:]
         hass_url = current_app.config["url"]
 
-        if target_device_id != device_id:
-            return
-
-        if card_url:
-            new_url = f"{hass_url}/{card_url}"
+        if card_path:
+            new_url = f"{hass_url}/{card_path}"
             default_dashboard_url = f"{hass_url}/{current_app.config.get('default_dashboard')}"
             self.load_url(new_url)
 
