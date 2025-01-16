@@ -11,6 +11,10 @@ flask = {extras = ["async"], version = "*"}
 hass-client = "*"
 environs = "*"
 requests = "*"
+pytest = "*"
+pytest-flask = "*"
+pytest-cov = "*"
+pytest-asyncio = "*"
 
 [dev-packages]
 pyinstaller = "*"

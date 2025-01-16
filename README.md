@@ -95,6 +95,12 @@ Click on that device and look for the section at the top that says "Controls", w
 Dashboard". Type in the name of the default dashboard for that device. It will be saved and the device will be updated
 as soon as that text box loses focus (so click somewhere else on the page, hit tab, etc.).
 
+## Usage
+The integration provides two services:
+* `remote_assist_display.navigate` is meant to be a browser-mod-compatible service. It takes a target (the device),
+and a path (relative to your home assistant base URL).
+* `remote_assist_display.navigate_url` is different in that it can accept any URL, not just a home assistant one.
+
 ## Known Issues
 This project is still in an early prototype stage. In addition to the usual implications (rapidly chanaging code base, 
 little error handling, etc.), there are a few known issues:
