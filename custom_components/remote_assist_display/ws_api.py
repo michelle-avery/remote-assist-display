@@ -89,17 +89,6 @@ async def async_setup_ws_api(hass):
         connection.send_message(websocket_api.result_message(msg["id"], settings))
 
     @websocket_api.websocket_command(
-        {vol.Required("type"): PING_WS_COMMAND, vol.Required("display_id"): str}
-    )
-    @websocket_api.async_response
-    async def handle_ping(hass, connection, msg):
-        last_seen = time.time()
-        data = {"last_seen": last_seen}
-        display_id = msg["display_id"]
-        store = hass.data[DOMAIN][DATA_STORE]
-        await store.async_set_display(display_id, **data)
-
-    @websocket_api.websocket_command(
         {
             vol.Required("type"): UPDATE_WS_COMMAND,
             vol.Required("display_id"): str,
@@ -108,7 +97,7 @@ async def async_setup_ws_api(hass):
     )
     @websocket_api.async_response
     async def handle_update(hass, connection, msg):
-        """Update the current URL sensor for the display."""
+        """Update the current sensors for the display."""
         display_id = msg["display_id"]
         store = hass.data[DOMAIN][DATA_STORE]
 
@@ -120,5 +109,4 @@ async def async_setup_ws_api(hass):
     async_register_command(hass, handle_connect)
     async_register_command(hass, handle_register)
     async_register_command(hass, handle_settings)
-    async_register_command(hass, handle_ping)
     async_register_command(hass, handle_update)
