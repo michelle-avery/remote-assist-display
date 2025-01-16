@@ -1,0 +1,36 @@
+name: Build
+
+on:
+  workflow_run:
+    workflows: ["Test"]
+    types:
+      - completed
+
+jobs:
+  build-application:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./application
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Pull builder image
+      run: docker pull ghcr.io/${{ github.repository }}/rad-builder-alpine-arm64:latest
+
+    - name: Build application
+      run: |
+        docker run --rm --platform linux/arm64 \
+          -v ${PWD}:/usr/src/app \
+          ghcr.io/${{ github.repository }}/rad-builder-alpine-arm64:latest
+
+    - name: Upload binary
+      uses: actions/upload-artifact@v3
+      with:
+        name: remote-assist-display-app-alpine-arm64
+        path: dist/remote-assist-display-app-alpine-arm64

@@ -13,10 +13,14 @@ RUN apk add \
 
 RUN pip install --no-cache-dir pipenv
 
+COPY Pipfile Pipfile.lock ./
+
+RUN pipenv install --dev
+
 ENTRYPOINT ["sh", "-c", "\
   pipenv install --dev && \
   pipenv run pyinstaller main.py \
-    --name remote-assist-display-app \
+    --name remote-assist-display-app-alpine-arm64 \
     --add-data remote_assist_display/templates:remote_assist_display/templates \
     --onefile \
 "]
