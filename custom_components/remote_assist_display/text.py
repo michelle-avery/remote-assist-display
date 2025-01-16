@@ -41,6 +41,7 @@ class DefaultDashboardText(RADEntity, RestoreText):
         """Run when entity about to be added to hass."""
         await super().async_added_to_hass()
         if (last_text_data := await self.async_get_last_text_data()) is None:
+            self._attr_native_value = None
             return
         # If the entity state was last unknown, the native value here will still be None,
         # so restore it from settings.
@@ -58,6 +59,8 @@ class DefaultDashboardText(RADEntity, RestoreText):
     @property
     def native_value(self):
         val = self._data.get("display", {}).get("default_dashboard", None)
+        if not val:
+            val = self._data.get("settings", {}).get("default_dashboard", None)
         if not val:
             val = self._attr_native_value
         if len(str(val)) > 255:
