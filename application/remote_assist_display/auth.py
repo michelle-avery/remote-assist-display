@@ -17,7 +17,7 @@ class TokenStorage:
     def clear_token(cls):
         cls._access_token = None
 
-async def fetch_access_token(retries=5, delay=1, window=0, url="http://localhost:8123"):
+async def fetch_access_token(retries=5, delay=1, window=0, url=None):
     token = TokenStorage.get_token()
     if token:
         return token
@@ -38,4 +38,6 @@ async def fetch_access_token(retries=5, delay=1, window=0, url="http://localhost
                 token_window.destroy()
             return access_token
         await asyncio.sleep(delay)
+    if url:
+        token_window.destroy()
     raise Exception("Unable to fetch token from localStorage")
