@@ -72,23 +72,6 @@ def mock_websocket_manager():
         mock_class.get_instance.return_value = mock_instance
         yield mock_class, mock_instance
 
-
-@pytest.mark.asyncio
-async def test_hass_config_failure(app, mock_websocket_manager):
-    """Test failed Home Assistant configuration."""
-    mock_manager, mock_instance = mock_websocket_manager
-
-    # Create an async mock that raises an exception
-    async def mock_initialize_error(url):
-        raise Exception("WebSocket connection failed")
-
-    mock_instance.initialize.side_effect = mock_initialize_error
-
-    with app.test_request_context('/hass-config', method='POST'):
-        app.config['url'] = 'http://test.local:8123'
-        with pytest.raises(Exception, match="WebSocket connection failed") as exc_info:
-            await app.view_functions['hassconfig']()
-
 @pytest.fixture
 def mock_webview():
     """Mock the webview module."""
