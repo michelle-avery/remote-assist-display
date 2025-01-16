@@ -16,7 +16,7 @@ def event_router(event, expire_time=None):
             # The event is a request to navigate to a URL
             display_state.load_url(event.get("event", {}).get("url"))
         elif event.get("event", {}).get("command") == "remote_assist_display/navigate":
-            # The event is a request to naavigate to a relative path in home assistant
+            # The event is a request to navigate to a relative path in home assistant
             display_state.load_card(event.get("event"))
 
     except Exception as e:
