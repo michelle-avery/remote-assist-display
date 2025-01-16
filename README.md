@@ -36,11 +36,7 @@ devcontainer.json file like this (make sure to change the source to match your e
   ]
 ```
 #### Completing the installation
-There is currently one more step needed as a workaround. Devices running the Remote Assist Display GUI application
-should automatically be registered in Home Assistant, but the endpoints for this are currently not being loaded unless a
-device already exists. To work around this, you can create a temporary device in Home Assistant. This can be done by going
-to Integrations, clicking "Add Integration", searching for "Remote Assist Display", and adding a temporary device. Once
-your first device is added, the endpoints will be loaded and you can remove the temporary device.
+Once the component is in place, add it via the integrations dashboard or click here: [![Open](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=remote_assist_display)
     
 ## The Remote Assist Display GUI Application
 The GUI application is a Python application that uses Pywebview to display a web page in a window. The application 
@@ -67,26 +63,44 @@ an [issue](https://github.com/michelle-avery/remote-assist-display/issues)
   (this will be the  case with  ThinkSmart View devices, and potentially others as well), preface the command with 
 `MESA_GLES_VERSION_OVERRIDE=2.0`
 
+### Running the Standalone Executable
+Standalone executables for the ThinkSmart View (which theoretically should work on any alpine-based arm system) are
+published with each release. Just download the file, make sure it's executable with `chmod +x remote-assist-display-app`,
+and run it.
+
+### Creating a Standalone Executable for the ThinkSmart View
+The ThinkSmart View devices have become popular for applications like this due to their currently low price point.
+These devices can also be flashed to run PostmarketOS, which allows for more flexibility in the applications that can
+be installed. Given the limited disk space on these devices, and the additional dependencies needed, however, this
+project provides the ability to create a standalone executable that can be run on the device without needing to install
+dependencies, check out the repository, etc. This will eventually be published with each release, but if you'd like to
+create your own in the interim, and you have docker installed on a workstation:
+* Clone this repository to your local machine
+* The ThinkSmart Views run on ARM processors, so assuming your workstation is x86, you'll need to enable quemu
+  emulation. This can be done by running `docker run --rm --privileged multiarch/qemu-user-static --reset -p yes`
+* Run `docker build --platform linux/arm64 . -t rad-builder` to build the builder image
+* From the application directory, run `docker run --rm -v $(pwd):/usr/src/app --platform linux/arm64 rad-builder` 
+to build the standalone executable. This will create a file called `remote-assist-display-app` in the `dist` directory under
+your current directory.
+* Copy the `remote_assist_display` file to your ThinkSmart View device, and run it with 
+`MESA_GLES_VERSION_OVERRIDE=2.0 ./remote-assist-display-app`
+
 ### Configuration
 * When the application starts up for the first time, it will prompt you to enter the URL of your Home Assistant 
 instance. You will then be directed to that instance to log in.
 * Once you've logged in to Home Assistant, you will be redirected to a page that lets you know the device is waiting 
 for a configuration. You can now configure the device in Home Assistant.
-* Go to Integrations, find the "Remote Assist Display" integration, and click on it. You should see a new device
-in addition to the temporary device you previously created. Click on the "Configure" button next to the new device.
-* Under "assist_entity_id", select the corresponding assist entity that this display will be used with.
-* The "event_type" functionality is not yet fully implemented, so you enter any placeholder text here.
-* For "default_dashboard", enter the relative path to the dashboard you'd like to display when the application starts.
-* Click submit to save the configuration, which should automatically be picked up by the device.
+* Go to Integrations, find the "Remote Assist Display" integration, and click on it. You should see your new device.
+Click on that device and look for the section at the top that says "Controls", with an input box for "Default 
+Dashboard". Type in the name of the default dashboard for that device. It will be saved and the device will be updated
+as soon as that text box loses focus (so click somewhere else on the page, hit tab, etc.).
 
 ## Known Issues
 This project is still in an early prototype stage. In addition to the usual implications (rapidly chanaging code base, 
 little error handling, etc.), there are a few known issues:
-* See the workaround above in the installation instructions for the custom component
-* Once the application registers itself to home assistant, it currently polls home assistant every 60 seconds until it
-finds a configuration with the default dashboard defined. This will be moved to a pub/sub model in the future, but for
-now, you'll need to wait up to 60 seconds after configuring the device in Home Assistant for the dashboard to load. Note
-that there's also no timeout on this polling, so you probably don't want to leave it in this state indefinitely.
-* The devices currently only check for their configuration at startup and during the initial configuration. This means
-if you change the configuration in Home Assistant, you'll need to restart the application on the device for the changes
-to take effect.
+* If you mistype the URL of your home assistant instance, you'll be redirected to an error page with no way to go back.
+The application will need to be quit and restarted.
+* There's currently no heartbeat to maintain the connection to Home Assistant or detect drops, so if the connection is
+lost (ie, if the server is restarted), the application will need to be restarted as well.
+* On some systems, when running the standalone exectuable, on-screen keyboards may not auto-open and may need to be
+expanded manually to provide input.
