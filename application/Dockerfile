@@ -17,7 +17,6 @@ ENTRYPOINT ["sh", "-c", "\
   pipenv install --dev && \
   pipenv run pyinstaller main.py \
     --name remote-assist-display-app \
-    --add-data config/templates:config/templates \
-    --add-data dashboard/templates:dashboard/templates \
+    --add-data remote_assist_display/templates:remote_assist_display/templates \
     --onefile \
 "]

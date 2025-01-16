@@ -1,47 +1,43 @@
 """The Remote Assist Display integration."""
 
+import logging
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import device_registry
+import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.typing import ConfigType
 
-from .const import DOMAIN
-from .http_api import RegistrationsView, ConfigurationView
-from .remote_assist_display import RemoteAssistDisplay
+from .const import DATA_ADDERS, DATA_DISPLAYS, DATA_STORE, DOMAIN
 from .service import async_setup_services
+from .store import RADStore
+from .ws_api import async_setup_ws_api
 
-PLATFORMS = [Platform.SENSOR]
+_LOGGER = logging.getLogger(__name__)
+
+CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
+
+PLATFORMS = [Platform.SENSOR, Platform.TEXT]
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType):
     """Set up the Remote Assist Display component."""
-    hass.http.register_view(RegistrationsView)
-    hass.http.register_view(ConfigurationView)
+    store = RADStore(hass)
+    await store.async_load()
+
+    hass.data[DOMAIN] = {
+        DATA_DISPLAYS: {},
+        DATA_ADDERS: {},
+        DATA_STORE: store,
+    }
+
     return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Set up Remote Assist Display from a config entry."""
-    dr = device_registry.async_get(hass)
-    device = dr.async_get_or_create(
-        config_entry_id=entry.entry_id, identifiers={(DOMAIN, entry.unique_id)}
-    )
-
-    rad = RemoteAssistDisplay(hass, entry, device)
-    if not hass.data.get(DOMAIN):
-        hass.data[DOMAIN] = {}
-        async_setup_services(hass)
-
-    hass.data[DOMAIN][entry.entry_id] = rad
-
+    """Set up Remote Assist Display Controller from a config entry."""
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    async_setup_services(hass)
+    await async_setup_ws_api(hass)
+
     return True
-
-
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Unload a config entry."""
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id)
-    return unload_ok
