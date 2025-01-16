@@ -121,43 +121,6 @@ class RemoteAssistDisplay:
         )
         self.update(hass, {"connected": False})
 
-    # def _set_event_listener(self):
-    #     """Set up an event listener for this device."""
-
-    #     @callback
-    #     def handle_event(event: Event):
-    #         """Handle the event."""
-    #         if not self._intent_sensor:
-    #             return
-
-    #         event_data = event.data
-
-    #         # Update the intent sensor for this device if the event came from its corresponding assist satellite
-    #         if event_data.get("device_id") == self._assist_device_id:
-    #             self._intent_sensor.update_from_event(event_data["result"])
-
-    #     # Remove any existing event listener
-    #     if self._event_listener:
-    #         self._event_listener()
-
-    #     # Set up a new event listener
-    #     self._event_listener = self._hass.bus.async_listen(
-    #         self._event_type, handle_event
-    #     )
-
-    # def set_intent_sensor(self, sensor):
-    #     """Set the intent sensor for this device."""
-    #     self._intent_sensor = sensor
-
-    # def update_event_type(self, event_type: str):
-    #     """Update the event type for this device."""
-    #     self._event_type = event_type
-    #     if self._event_type:
-    #         self._set_event_listener()
-    #     elif self._event_listener:
-    #         self._event_listener()
-    #         self._event_listener = None
-
 
 def get_or_register_display(hass, display_id):
     """Get or create a Remote Assist Display device."""
