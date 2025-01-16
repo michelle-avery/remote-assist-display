@@ -1,4 +1,4 @@
-from application.remote_assist_display.state import DisplayState
+from .state import DisplayState
 
 load_card_timer = None
 
