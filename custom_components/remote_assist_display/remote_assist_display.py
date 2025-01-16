@@ -70,11 +70,11 @@ class RemoteAssistDisplay:
 
         _assert_display_sensor("sensor", "current_url", "Current URL", icon="mdi:web")
 
-        if "default_dashboard_path" not in self.entities:
+        if "default_dashboard" not in self.entities:
             adder = hass.data[DOMAIN][DATA_ADDERS]["text"]
             new = DefaultDashboardText(coordinator, display_id, self)
             adder([new])
-            self.entities["default_dashboard_path"] = new
+            self.entities["default_dashboard"] = new
 
         hass.create_task(
             self.send(
