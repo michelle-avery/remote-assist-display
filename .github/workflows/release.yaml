@@ -31,6 +31,11 @@ jobs:
           -v ${PWD}:/usr/src/app \
           ghcr.io/${{ github.repository }}/rad-builder-alpine-arm64:latest
 
+    - name: Fix permissions
+      run: |
+        sudo chown -R $USER:$USER dist/
+        sudo chmod -R 755 dist/
+
     - name: Generate checksum
       run: |
         cd dist
