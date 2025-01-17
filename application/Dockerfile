@@ -1,5 +1,7 @@
 FROM python:3.12.8-alpine
 
+LABEL org.opencontainers.image.source="https://github.com/michelle-avery/remote-assist-display"
+
 ENV LD_LIBRARY_PATH=/usr/lib
 WORKDIR /usr/src/app
 
