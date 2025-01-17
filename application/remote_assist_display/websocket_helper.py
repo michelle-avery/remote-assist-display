@@ -124,7 +124,7 @@ class WebSocketHelper:
     async def connect_client(self):
         """Connect to the WebSocket client."""
         if self.client is None:
-            access_token = await fetch_access_token(self.retry_limit, self.token_retry_delay)
+            access_token = await fetch_access_token(self.retry_limit, self.token_retry_delay, url=self.url)
             self.client = HomeAssistantClient(self.ws_url, access_token)
         await self.client.connect()
         self.listener_task = asyncio.create_task(self.client.start_listening())
