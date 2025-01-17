@@ -15,9 +15,11 @@ pytest = "*"
 pytest-flask = "*"
 pytest-cov = "*"
 pytest-asyncio = "*"
+cython = "*"
 
 [dev-packages]
 pyinstaller = "*"
+buildozer = "*"
 
 [requires]
 python_version = "3.12"
