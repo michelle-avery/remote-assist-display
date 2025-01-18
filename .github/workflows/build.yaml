@@ -39,6 +39,11 @@ jobs:
           -v ${PWD}:/usr/src/app \
           ghcr.io/${{ github.repository }}/rad-builder-alpine-arm64:latest
 
+    - name: Fix permissions
+      run: |
+        sudo chown -R $USER:$USER dist/
+        sudo chmod -R 755 dist/
+
     - name: debug
       run: |
         ls -la
@@ -47,11 +52,14 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: remote-assist-display-app-alpine-arm64
-        path: ./dist/remote-assist-display-app-alpine-arm64
+        path: application/dist/remote-assist-display-app-alpine-arm64
 
   build-android:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./application
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python
@@ -73,7 +81,7 @@ jobs:
     - name: Build APK
       run: |
         docker run --rm \
-        -v ${{ github.workspace }}://home/user/hostcwd \
+        -v ${{ github.workspace }}:/home/user/hostcwd \
         -v ${{ github.workspace }}/.buildozer:/home/user/.buildozer \
         kivy/buildozer:latest \
         android debug
