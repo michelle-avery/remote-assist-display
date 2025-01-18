@@ -23,6 +23,11 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
+    - name: debug
+      run: |
+        pwd
+        ls -la
+
     - name: Pull builder image
       run: |
         docker buildx create --use
@@ -37,7 +42,7 @@ jobs:
     - name: debug
       run: |
         ls -la
-        
+
     - name: Upload binary
       uses: actions/upload-artifact@v3
       with:
