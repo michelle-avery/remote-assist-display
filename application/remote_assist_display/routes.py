@@ -1,6 +1,6 @@
 from flask import render_template, request, redirect, url_for, current_app
 from http import HTTPStatus
-from .websocket_helper import WebSocketManager
+from .websocket_manager import WebSocketManager
 from .config_handler import get_saved_config, save_to_config
 from .auth import fetch_access_token
 from .navigate import load_dashboard
@@ -37,11 +37,9 @@ def register_routes(app):
     async def connect():
 
         url = request.form.get("haUrl")
-
         load_dashboard(url)
-
         try:
-            await fetch_access_token(url=url, retries=current_app.config.get("TOKEN_RETRY_LIMIT"))
+            await fetch_access_token(url=url, retries=current_app.config.get("TOKEN_RETRY_LIMIT"), app=current_app)
             # Save the URL to our config file
             save_url(url)
             load_dashboard(url_for('waiting'))

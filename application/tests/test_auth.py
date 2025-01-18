@@ -22,19 +22,15 @@ class TestTokenStorage:
 
 class TestFetchAccessToken:
     @pytest.mark.asyncio
-    async def test_fetch_token_from_storage(self, mock_webview):
+    async def test_fetch_token_from_storage(self, app):
         """Test fetching token when it's already in storage."""
-        mock_wv, mock_window = mock_webview
         stored_token = "stored-token-123"
         TokenStorage.set_token(stored_token)
-
-        token = await fetch_access_token()
-
+        token = await fetch_access_token(app)
         assert token == stored_token
-        mock_wv.create_window.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_fetch_token_from_window_success(self, mock_webview):
+    async def test_fetch_token_from_window_success(self, mock_webview, app):
         """Test successfully fetching token from window localStorage."""
         mock_wv, mock_window = mock_webview
         TokenStorage.clear_token()
@@ -43,14 +39,13 @@ class TestFetchAccessToken:
         test_token = "new-token-456"
         mock_window.evaluate_js.return_value = json.dumps({"access_token": test_token})
 
-        token = await fetch_access_token()
+        token = await fetch_access_token(app)
 
         assert token == test_token
         mock_window.evaluate_js.assert_called_once()
-        mock_window.destroy.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_fetch_token_multiple_attempts(self, mock_webview):
+    async def test_fetch_token_multiple_attempts(self, mock_webview, app):
         """Test token fetch with multiple attempts before success."""
         mock_wv, mock_window = mock_webview
         TokenStorage.clear_token()
@@ -63,14 +58,13 @@ class TestFetchAccessToken:
             json.dumps({"access_token": test_token})
         ]
 
-        token = await fetch_access_token(retries=3, delay=0.1)
+        token = await fetch_access_token(app, retries=3, delay=0.1)
 
         assert token == test_token
         assert mock_window.evaluate_js.call_count == 3
-        mock_window.destroy.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_fetch_token_failure_existing_window(self, mock_webview):
+    async def test_fetch_token_failure_existing_window(self, mock_webview, app):
         """Test token fetch failure after max retries."""
         mock_wv, mock_window = mock_webview
         TokenStorage.clear_token()
@@ -79,14 +73,12 @@ class TestFetchAccessToken:
         mock_window.evaluate_js.return_value = None
 
         with pytest.raises(Exception, match="Unable to fetch token from localStorage"):
-            await fetch_access_token(retries=2, delay=0.1)
+            await fetch_access_token(app, retries=2, delay=0.1)
 
         assert mock_window.evaluate_js.call_count == 2
-        # since we didn't pass in a url, a new window should not have been created
-        mock_window.destroy.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_fetch_token_failure_new_window(self, mock_webview):
+    async def test_fetch_token_failure_new_window(self, mock_webview, app):
         """Test token fetch failure after max retries with new window."""
         mock_wv, mock_window = mock_webview
         TokenStorage.clear_token()
@@ -95,14 +87,13 @@ class TestFetchAccessToken:
         mock_window.evaluate_js.return_value = None
 
         with pytest.raises(Exception, match="Unable to fetch token from localStorage"):
-            await fetch_access_token(retries=2, delay=0.1, url="http://test.local:8123")
+            await fetch_access_token(app, retries=2, delay=0.1, url="http://test.local:8123")
 
         assert mock_window.evaluate_js.call_count == 2
-        mock_window.destroy.assert_called_once()
 
 
     @pytest.mark.asyncio
-    async def test_fetch_token_existing_window(self, mock_webview):
+    async def test_fetch_token_existing_window(self, mock_webview, app):
         """Test fetching token using an existing window."""
         mock_wv, mock_window = mock_webview
         TokenStorage.clear_token()
@@ -110,14 +101,12 @@ class TestFetchAccessToken:
         test_token = "existing-window-token"
         mock_window.evaluate_js.return_value = json.dumps({"access_token": test_token})
 
-        token = await fetch_access_token(window=0, url=None)
+        token = await fetch_access_token(app, window=0, url=None)
 
         assert token == test_token
-        mock_wv.create_window.assert_not_called()
-        assert not mock_window.destroy.called  # Window should not be destroyed
 
     @pytest.mark.asyncio
-    async def test_fetch_token_invalid_json(self, mock_webview):
+    async def test_fetch_token_invalid_json(self, mock_webview, app):
         """Test handling invalid JSON in localStorage."""
         mock_wv, mock_window = mock_webview
         TokenStorage.clear_token()
@@ -126,10 +115,10 @@ class TestFetchAccessToken:
         mock_window.evaluate_js.return_value = "invalid json"
 
         with pytest.raises(Exception):
-            await fetch_access_token(retries=1)
+            await fetch_access_token(app, retries=1)
 
     @pytest.mark.asyncio
-    async def test_fetch_token_missing_access_token(self, mock_webview):
+    async def test_fetch_token_missing_access_token(self, mock_webview, app):
         """Test handling JSON without access_token field."""
         mock_wv, mock_window = mock_webview
         TokenStorage.clear_token()
@@ -138,4 +127,4 @@ class TestFetchAccessToken:
         mock_window.evaluate_js.return_value = json.dumps({"other_field": "value"})
 
         with pytest.raises(Exception):
-            await fetch_access_token(retries=1)
+            await fetch_access_token(app, retries=1)

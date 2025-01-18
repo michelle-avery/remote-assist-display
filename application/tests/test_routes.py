@@ -44,7 +44,7 @@ async def test_connect(app, mock_fetch_access_token, mock_save_to_config, mock_l
         response = await app.view_functions['connect']()
 
     assert response[1] == HTTPStatus.OK
-    mock_fetch_access_token.assert_called_once_with(url=test_url, retries=app.config['TOKEN_RETRY_LIMIT'])
+    mock_fetch_access_token.assert_called_once_with(app=app, url=test_url, retries=app.config['TOKEN_RETRY_LIMIT'])
     mock_save_to_config.assert_called_once_with('HomeAssistant', 'url', test_url)
     assert mock_load_dashboard.call_count == 2
 
