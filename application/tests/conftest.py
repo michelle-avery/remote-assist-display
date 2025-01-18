@@ -7,7 +7,7 @@ from flask import Flask
 from unittest.mock import MagicMock, patch, Mock
 from remote_assist_display import create_app
 from remote_assist_display.config_handler import get_saved_config, save_to_config
-from remote_assist_display.websocket_helper import WebSocketManager
+from remote_assist_display.websocket_manager import WebSocketManager
 from remote_assist_display.navigate import load_dashboard
 
 
