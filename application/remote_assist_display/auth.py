@@ -22,22 +22,21 @@ async def fetch_access_token(retries=5, delay=1, window=0, url=None):
     if token:
         return token
 
-    if url:
-        token_window = webview.create_window(title="token", url=url, hidden=True)
-    else:
-        token_window = webview.windows[window]
+    main_window = webview.windows[window]
+    original_url = main_window.get_current_url()
+
     for _ in range(retries):
         js = """
                 localStorage.getItem("hassTokens")
             """
-        token = token_window.evaluate_js(js)
+        token = main_window.evaluate_js(js)
         if token:
             access_token = json.loads(token)["access_token"]
             TokenStorage.set_token(access_token)
-            if url:
-                token_window.destroy()
+            if original_url:
+                main_window.load_url(original_url)
             return access_token
         await asyncio.sleep(delay)
-    if url:
-        token_window.destroy()
+    if original_url:
+        main_window.load_url(original_url)
     raise Exception("Unable to fetch token from localStorage")
