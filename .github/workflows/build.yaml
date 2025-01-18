@@ -57,7 +57,7 @@ jobs:
     - name: Prepare pywebview jar
       run: |
         mkdir -p libs
-        python -c "from webview import util; import shutil; shutil.copy(util.android_jar_path(), 'libs/pywebview-android.jar')"
+        pipenv run python -c "from webview import util; import shutil; shutil.copy(util.android_jar_path(), 'libs/pywebview-android.jar')"
     - name: Pull buildozer image
       run: |
         docker pull kivy/buildozer:latest
