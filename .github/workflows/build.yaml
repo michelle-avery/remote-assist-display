@@ -34,11 +34,15 @@ jobs:
           -v ${PWD}:/usr/src/app \
           ghcr.io/${{ github.repository }}/rad-builder-alpine-arm64:latest
 
+    - name: debug
+      run: |
+        ls -la
+        
     - name: Upload binary
       uses: actions/upload-artifact@v3
       with:
         name: remote-assist-display-app-alpine-arm64
-        path: dist/remote-assist-display-app-alpine-arm64
+        path: ./dist/remote-assist-display-app-alpine-arm64
 
   build-android:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
