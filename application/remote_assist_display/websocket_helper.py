@@ -1,6 +1,4 @@
-from hass_client import HomeAssistantClient
 import asyncio
-from aiohttp import ClientSession
 import threading
 from flask import current_app
 import socket
@@ -8,6 +6,8 @@ import socket
 from .listener import event_router
 from .auth import fetch_access_token
 from .state import DisplayState
+from .websocket_client import HomeAssistantWebSocketClient
+
 class WebSocketManager:
     _instance = None
 
@@ -69,40 +69,39 @@ class WebSocketManager:
             async def run_client():
                 while self._running:
                     try:
-                        async with ClientSession() as session:
-                            async with HomeAssistantClient(
-                                    self.ws_url,
-                                    self.token,
-                                    session
-                            ) as client:
-                                self.client = client
-                                # Make sure this device is registered:
-                                registration = await client.send_command(
-                                    "remote_assist_display/register",
-                                    hostname=socket.gethostname(),
-                                    display_id=self.app.config["UNIQUE_ID"]
-                                )
-                                # Get config using the client directly
-                                response = await client.send_command(
-                                    "remote_assist_display/settings",
-                                    display_id=self.app.config["UNIQUE_ID"]
-                                )
-                                # Use the app context to update config
-                                self.app.config["default_dashboard"] = response["default_dashboard"]
-                                # Load the dashboard
-                                dashboard_url = f'{self.app.config["url"]}/{self.app.config["default_dashboard"]}'
-                                self.display_state.load_url(dashboard_url)
-                                data = {"display": {"current_url": dashboard_url}}
-                                await client.send_command("remote_assist_display/update", display_id=self.app.config["UNIQUE_ID"], data=data)
-                                # Subscribe to future updates
-                                await client.subscribe(
-                                    event_router,
-                                    'remote_assist_display/connect',
-                                    display_id=self.app.config["UNIQUE_ID"]
-                                )
+                        async with HomeAssistantWebSocketClient(
+                                self.ws_url,
+                                self.token,
+                                None
+                        ) as client:
+                            self.client = client
+                            # Make sure this device is registered:
+                            registration = await client.send_command(
+                                "remote_assist_display/register",
+                                hostname=socket.gethostname(),
+                                display_id=self.app.config["UNIQUE_ID"]
+                            )
+                            # Get config using the client directly
+                            response = await client.send_command(
+                                "remote_assist_display/settings",
+                                display_id=self.app.config["UNIQUE_ID"]
+                            )
+                            # Use the app context to update config
+                            self.app.config["default_dashboard"] = response["default_dashboard"]
+                            # Load the dashboard
+                            dashboard_url = f'{self.app.config["url"]}/{self.app.config["default_dashboard"]}'
+                            self.display_state.load_url(dashboard_url)
+                            data = {"display": {"current_url": dashboard_url}}
+                            await client.send_command("remote_assist_display/update", display_id=self.app.config["UNIQUE_ID"], data=data)
+                            # Subscribe to future updates
+                            await client.subscribe(
+                                event_router,
+                                'remote_assist_display/connect',
+                                display_id=self.app.config["UNIQUE_ID"]
+                            )
 
-                                while self._running:
-                                    await asyncio.sleep(1)
+                            while self._running:
+                                await asyncio.sleep(1)
                     except Exception as e:
                         current_app.logger.error(f"WebSocket error: {e}")
                         await asyncio.sleep(5)
