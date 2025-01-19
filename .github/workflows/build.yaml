@@ -28,6 +28,11 @@ jobs:
         docker buildx create --use
         docker pull --platform linux/arm64 ghcr.io/${{ github.repository }}/rad-builder-alpine-arm64:latest
 
+    - name: debugging
+      run: |
+        pwd
+        ls -la
+        
     - name: Build application
       run: |
         docker run --rm --platform linux/arm64 \
