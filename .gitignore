@@ -167,3 +167,5 @@ config.ini
 
 # Explicitly include the buildozer.spec file, even though we're ignoring other *.spec files
 !buildozer.spec
+!Dockerfile.build-alpine-arm64
+!Dockerfile.build-android
