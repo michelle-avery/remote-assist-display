@@ -2,6 +2,9 @@ name: Tests
 
 on:
   push:
+    paths:
+      - 'application/**'
+      - '.github/workflows/**'
   pull_request:
     branches: [main]
 
