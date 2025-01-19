@@ -46,9 +46,7 @@ RUN usermod -append --groups sudo ${USER}
 RUN echo "%sudo ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 RUN mkdir /opt/pywebview/
-RUN chown -R ${USER}:${USER} /opt/pywebview/
 
-#USER ${USER}
 WORKDIR ${WORK_DIR}
 COPY --chown=user:user . ${SRC_DIR}
 
@@ -56,7 +54,6 @@ COPY --chown=user:user . ${SRC_DIR}
 RUN pip3 install "Cython<3.0"
 RUN pip3 install pywebview
 RUN pip3 install buildozer
-RUN echo $PATH
 
 RUN python3 -c "from webview import util; import shutil; shutil.copy(util.android_jar_path(), '/opt/pywebview/pywebview-android.jar')"
 #  Set up Enviornment variables for buildozer spec
