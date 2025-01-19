@@ -78,8 +78,8 @@ jobs:
 
     - name: Fix permissions
       run: |
-        sudo chown -R $USER:$USER bin/
-        sudo chmod -R 755 bin/
+        sudo chown -R $USER:$USER build/bin/
+        sudo chmod -R 755 build/bin/
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v3
