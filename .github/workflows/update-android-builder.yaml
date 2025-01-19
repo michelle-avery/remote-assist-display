@@ -1,4 +1,4 @@
-name: Update Alpine Builder Image
+name: Update Android Builder Image
 
 on:
   push:
