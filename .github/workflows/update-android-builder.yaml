@@ -3,7 +3,7 @@ name: Update Alpine Builder Image
 on:
   push:
     paths:
-      - 'application/build/Dockerfile.build-alpine-arm64'
+      - 'application/build/Dockerfile.build-android'
       - 'application/Pipfile'
       - 'application/Pipfile.lock'
     branches:
@@ -39,11 +39,11 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: ./application
-        platforms: linux/arm64
+        platforms: linux/amd64
         push: true
-        file: ./application/build/Dockerfile.build-alpine-arm64
+        file: ./application/build/Dockerfile.build-android
         tags: |
-          ghcr.io/${{ github.repository }}/rad-builder-alpine-arm64:latest
-          ghcr.io/${{ github.repository }}/rad-builder-alpine-arm64:${{ github.sha }}
-        cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/rad-builder-alpine-arm64:latest
+          ghcr.io/${{ github.repository }}/rad-builder-android:latest
+          ghcr.io/${{ github.repository }}/rad-builder-android:${{ github.sha }}
+        cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/rad-builder-android:latest
         cache-to: type=inline

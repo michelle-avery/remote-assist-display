@@ -23,11 +23,6 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: debug
-      run: |
-        pwd
-        ls -la
-
     - name: Pull builder image
       run: |
         docker buildx create --use
@@ -44,10 +39,6 @@ jobs:
         sudo chown -R $USER:$USER dist/
         sudo chmod -R 755 dist/
 
-    - name: debug
-      run: |
-        ls -la
-
     - name: Upload binary
       uses: actions/upload-artifact@v3
       with:
@@ -62,31 +53,25 @@ jobs:
         working-directory: ./application
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-    - name: Install dependencies
+
+    - name: Pull android builder image
       run: |
-        python -m pip install --upgrade pip
-        pip install pipenv
-        pipenv install --dev
-    - name: Prepare pywebview jar
-      run: |
-        mkdir -p libs
-        pipenv run python -c "from webview import util; import shutil; shutil.copy(util.android_jar_path(), 'libs/pywebview-android.jar')"
-    - name: Pull buildozer image
-      run: |
-        docker pull kivy/buildozer:latest
+        docker pull ghcr.io/${{ github.repository }}/rad-builder-android:latest
+
     - name: Build APK
       run: |
         docker run --rm \
         -v ${{ github.workspace }}:/home/user/hostcwd \
         -v ${{ github.workspace }}/.buildozer:/home/user/.buildozer \
-        kivy/buildozer:latest \
+        ghcr.io/${{ github.repository }}/rad-builder-android:latest \
         android debug
+    - name: Fix permissions
+      run: |
+        sudo chown -R $USER:$USER bin/
+        sudo chmod -R 755 bin/
+
     - name: Upload APK artifact
       uses: actions/upload-artifact@v3
       with:
-          name: debug-apk
+          name: remote-assist-display-debug.apk
           path: bin/*.apk

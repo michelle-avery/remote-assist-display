@@ -10,7 +10,7 @@ package.name = RemoteAssistDisplay
 package.domain = com.caffeinatedfirefly.remoteassistdisplay
 
 # (str) Source code where the main.py live
-source.dir = .
+source.dir = ../
 
 # (list) Source files to include (let empty to include all the files)
 source.include_exts = py,png,jpg,kv,atlas,html,jar,css
@@ -174,7 +174,7 @@ p4a.extra_args = --extra-manifest-application-arguments "android:usesCleartextTr
 # their classes. Don't add jars that you do not need, since extra jars can slow
 # down the build process. Allows wildcards matching, for example:
 # OUYA-ODK/libs/*.jar
-android.add_jars =./libs/pywebview-android.jar
+android.add_jars =/opt/pywebview/pywebview-android.jar
 
 # (list) List of Java files to add to the android project (can be java or a
 # directory containing the files)
