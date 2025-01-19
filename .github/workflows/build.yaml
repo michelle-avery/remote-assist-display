@@ -85,4 +85,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
           name: remote-assist-display-debug.apk
-          path: bin/*.apk
+          path: application/build/bin/*.apk
