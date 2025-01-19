@@ -6,6 +6,7 @@ on:
       - 'application/build/Dockerfile.build-android'
       - 'application/Pipfile'
       - 'application/Pipfile.lock'
+      - '.github/workflows.update-android-builder.yaml'
     branches:
       - main
 
