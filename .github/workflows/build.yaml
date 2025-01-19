@@ -62,14 +62,16 @@ jobs:
       run: |
         pwd
         ls -la
-        
+        ls -la build
+
     - name: Build APK
       run: |
         docker run --rm \
-        -v ${{ github.workspace }}:/home/user/hostcwd \
+        -v ${{ github.workspace }}/application:/home/user/hostcwd \
         -v ${{ github.workspace }}/.buildozer:/home/user/.buildozer \
         ghcr.io/${{ github.repository }}/rad-builder-android:latest \
         android debug
+        
     - name: Fix permissions
       run: |
         sudo chown -R $USER:$USER bin/
