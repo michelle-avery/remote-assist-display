@@ -15,14 +15,17 @@ class HAWebSocketClient:
         self.id_counter = 0
         self._subscriptions: Dict[int, Tuple[dict, Callable]] = {}
         self._loop: Optional[asyncio.AbstractEventLoop] = None
+        self._command_responses: Dict[int, asyncio.Future] = {}
+        self._running = True
 
     async def __aenter__(self):
         await self.connect()
         self._loop = asyncio.get_running_loop()
-        self._loop.create_task(self.start_listening())  # Start the listener
+        self._loop.create_task(self._message_handler())
         return self
 
     async def __aexit__(self, *exc_details):
+        self._running = False
         await self.disconnect()
 
     async def connect(self) -> bool:
@@ -63,26 +66,20 @@ class HAWebSocketClient:
             **kwargs
         }
 
+        response_future = self._loop.create_future()
+        self._command_responses[cmd_id] = response_future
+
         await self.websocket.send(json.dumps(message))
 
-        while True:
-            response = json.loads(await self.websocket.recv())
-            if response.get("id") == cmd_id:
-                if "error" in response:
-                    raise ConnectionError(f"Command error: {response['error']}")
-                return response.get("result")
+        try:
+            response = await response_future
+            if "error" in response:
+                raise ConnectionError(f"Command error: {response['error']}")
+            return response.get("result")
+        finally:
+            self._command_responses.pop(cmd_id, None)
 
     async def subscribe(self, callback: Callable[[dict], None], command: str, **kwargs) -> Callable:
-        """Subscribe to a command with ongoing updates.
-
-        Args:
-            callback: Function to call when messages are received
-            command: Command to subscribe to
-            **kwargs: Additional arguments for the command
-
-        Returns:
-            Callable that can be used to unsubscribe
-        """
         self.id_counter += 1
         message_id = self.id_counter
 
@@ -95,51 +92,51 @@ class HAWebSocketClient:
         # Store subscription details for message handling
         self._subscriptions[message_id] = (message, callback)
 
-        # Send initial subscription command
+        response_future = self._loop.create_future()
+        self._command_responses[message_id] = response_future
+
         await self.websocket.send(json.dumps(message))
 
-        # Wait for and handle the initial response
-        response = json.loads(await self.websocket.recv())
-        if "error" in response:
-            self._subscriptions.pop(message_id)  # Clean up failed subscription
-            current_app.logger.error(f"Subscription failed: {response['error']}")
-            raise ConnectionError(f"Subscription error: {response['error']}")
-
-        def remove_listener():
-            if message_id in self._subscriptions:
+        try:
+            response = await response_future
+            if "error" in response:
                 self._subscriptions.pop(message_id)
+                raise ConnectionError(f"Subscription error: {response['error']}")
+            return lambda: self._subscriptions.pop(message_id, None)
+        finally:
+            self._command_responses.pop(message_id, None)
 
-        return remove_listener
+    async def _message_handler(self):
+        """Central message handling loop."""
+        current_app.logger.debug("Starting message handler")
 
-    async def start_listening(self):
-        """Listen for messages and handle subscriptions."""
-        self._loop = asyncio.get_running_loop()
-        current_app.logger.debug("Starting WebSocket listener")
-
-        while True:
+        while self._running and self.websocket:
             try:
                 raw_message = await self.websocket.recv()
-                current_app.logger.debug(f"Received WebSocket message: {raw_message}")
-
+                current_app.logger.debug(f"Received message: {raw_message}")
                 message = json.loads(raw_message)
 
+                msg_id = message.get("id")
+
+                # Handle command responses
+                if msg_id in self._command_responses:
+                    future = self._command_responses[msg_id]
+                    if not future.done():
+                        future.set_result(message)
+
                 # Handle subscription messages
-                if message.get("type") == "event":
-                    current_app.logger.debug("Processing event message")
-                    msg_id = message.get("id")
-                    if msg_id in self._subscriptions:
-                        current_app.logger.debug(f"Found subscription for id {msg_id}")
-                        _, callback = self._subscriptions[msg_id]
+                elif message.get("type") == "event":
+                    event_id = message.get("id")
+                    if event_id in self._subscriptions:
+                        _, callback = self._subscriptions[event_id]
                         if asyncio.iscoroutinefunction(callback):
                             self._loop.create_task(callback(message))
                         else:
                             self._loop.call_soon(callback, message)
-                    else:
-                        current_app.logger.debug(f"No subscription found for id {msg_id}")
-                else:
-                    current_app.logger.debug(f"Non-event message type: {message.get('type')}")
 
             except Exception as e:
-                current_app.logger.error(f"WebSocket listener error: {e}")
-                current_app.logger.debug(f"Exception details:", exc_info=True)
+                current_app.logger.error(f"Message handler error: {e}")
+                current_app.logger.debug("Exception details:", exc_info=True)
+                if not self._running:
+                    break
                 await asyncio.sleep(1)
