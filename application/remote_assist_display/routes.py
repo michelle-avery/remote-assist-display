@@ -1,27 +1,29 @@
-from flask import render_template, request, redirect, url_for, current_app
 from http import HTTPStatus
-from .websocket_manager import WebSocketManager
-from .config_handler import get_saved_config, save_to_config
-from .auth import fetch_access_token
-from .navigate import load_dashboard
 
+from flask import current_app, redirect, render_template, request, url_for
+
+from .auth import fetch_access_token
+from .config_handler import get_saved_config, save_to_config
+
+# from .websocket_manager import WebSocketManager
+from .ha_websocket_manager import WebSocketManager
+from .navigate import load_dashboard
 
 CONFIG_FILE = "config.ini"
 
 
 def register_routes(app):
-
     @app.route("/", methods=["GET"])
     async def config():
         saved_config = get_saved_config()
         if "HomeAssistant" in saved_config:
-            current_app.config["url"] = saved_config.get("HomeAssistant", "url", fallback=None)
+            current_app.config["url"] = saved_config.get(
+                "HomeAssistant", "url", fallback=None
+            )
             if current_app.config["url"]:
                 # Todo: handle cases where we have a saved url, but no valid credentials
                 return redirect(url_for("waiting"))
         return redirect(url_for("hass_login"))
-
-
 
     @app.route("/hass-login", methods=["GET"])
     def hass_login():
@@ -35,14 +37,20 @@ def register_routes(app):
 
     @app.route("/connect", methods=["POST"])
     async def connect():
-
         url = request.form.get("haUrl")
-        load_dashboard(url)
+        await load_dashboard(url)
         try:
-            await fetch_access_token(url=url, retries=current_app.config.get("TOKEN_RETRY_LIMIT"), app=current_app)
+            retries = current_app.config.get(
+                "TOKEN_RETRY_LIMIT", 5
+            ) 
+            await fetch_access_token(
+                url=url,
+                retries=retries,
+                app=current_app,
+            )
             # Save the URL to our config file
             save_url(url)
-            load_dashboard(url_for('waiting'))
+            await load_dashboard(url_for("waiting"))
             return "", HTTPStatus.OK
 
         except Exception as e:
@@ -53,7 +61,16 @@ def register_routes(app):
         return render_template("waiting.html")
 
     @app.route("/hass-config", methods=["POST"])
-    async def hassconfig():
-        manager = WebSocketManager.get_instance(current_app)
-        await manager.initialize(current_app.config["url"])
-        return "", HTTPStatus.OK
+    def hassconfig():
+        if "url" not in current_app.config:
+            return {"error": "Missing Home Assistant URL"}, HTTPStatus.BAD_REQUEST
+
+        try:
+            manager = WebSocketManager.get_instance(current_app)
+            manager.initialize(current_app.config["url"])
+            return "", HTTPStatus.OK
+        except Exception as e:
+            current_app.logger.error(
+                f"Failed to configure Home Assistant: {str(e)}", exc_info=True
+            )
+            return {"error": str(e)}, HTTPStatus.INTERNAL_SERVER_ERROR
