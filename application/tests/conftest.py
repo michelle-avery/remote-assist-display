@@ -13,7 +13,9 @@ def app():
     app = create_app()
     app.config["TESTING"] = True
     app.config["TOKEN_RETRY_LIMIT"] = 3
-    app.config["UNIQUE_ID"] = "test-device-id"
+    app.config["MAC_ADDRESS"] = "112233445566"
+    app.config["HOSTNAME"] = "test-hostname"
+    app.config["UNIQUE_ID"] = "remote-assist-display-112233445566-test-hostname"
 
     return app
 
@@ -111,6 +113,14 @@ def sample_config(temp_config_file):
     with open(temp_config_file, "w") as f:
         config.write(f)
     return config
+
+
+@pytest.fixture
+def mock_hostname():
+    """Mock socket.gethostname() to return a consistent value for testing."""
+    with patch("socket.gethostname") as mock:
+        mock.return_value = "test-hostname"
+        yield mock
 
 
 @pytest.fixture
