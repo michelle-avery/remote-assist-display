@@ -36,7 +36,10 @@ devcontainer.json file like this (make sure to change the source to match your e
   ]
 ```
 #### Completing the installation
-Once the component is in place, add it via the integrations dashboard or click here: [![Open](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=remote_assist_display)
+Once the component is in place, add it via the integrations dashboard or click here: [![Open](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=remote_assist_display). 
+It's possible to set default dashboards on a per-device basis, but if you'd like to use the default dashboard on all of your devices,
+you can sest that now from the integration's configuration page. Otherwise, new devices added will default to using the default
+lovelace dashboard, and can be individually changed.
     
 ## The Remote Assist Display GUI Application
 The GUI application is a Python application that uses Pywebview to display a web page in a window. The application 
@@ -88,8 +91,8 @@ your current directory.
 ### Configuration
 * When the application starts up for the first time, it will prompt you to enter the URL of your Home Assistant 
 instance. You will then be directed to that instance to log in.
-* Once you've logged in to Home Assistant, you will be redirected to a page that lets you know the device is waiting 
-for a configuration. You can now configure the device in Home Assistant.
+* Once you've logged in to Home Assistant, you will be redirected the default dashboard - either the one you've set
+at the integration level, or "lovelace" if none is set.
 * Go to Integrations, find the "Remote Assist Display" integration, and click on it. You should see your new device.
 Click on that device and look for the section at the top that says "Controls", with an input box for "Default 
 Dashboard". Type in the name of the default dashboard for that device. It will be saved and the device will be updated
