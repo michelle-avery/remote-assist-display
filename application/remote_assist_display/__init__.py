@@ -15,16 +15,8 @@ def create_app():
     app.static_folder = gui_dir
     app.template_folder = gui_dir
 
-    from .ha_websocket_manager import WebSocketManager
     from .routes import register_routes
 
     register_routes(app)
-
-    @app.teardown_appcontext
-    def cleanup(exception=None):
-        # Get the manager instance without creating a new one if it doesn't exist
-        manager = WebSocketManager._instance
-        if manager:
-            manager.shutdown()
 
     return app
