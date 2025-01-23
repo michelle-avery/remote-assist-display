@@ -8,9 +8,8 @@ from homeassistant.core import HomeAssistant
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.typing import ConfigType
 
-from .const import DATA_ADDERS, DATA_DISPLAYS, DATA_STORE, DOMAIN
+from .const import DATA_ADDERS, DATA_DISPLAYS, DOMAIN
 from .service import async_setup_services
-from .store import RADStore
 from .ws_api import async_setup_ws_api
 
 _LOGGER = logging.getLogger(__name__)
@@ -22,13 +21,10 @@ PLATFORMS = [Platform.SENSOR, Platform.TEXT]
 
 async def async_setup(hass: HomeAssistant, config: ConfigType):
     """Set up the Remote Assist Display component."""
-    store = RADStore(hass)
-    await store.async_load()
 
     hass.data[DOMAIN] = {
         DATA_DISPLAYS: {},
         DATA_ADDERS: {},
-        DATA_STORE: store,
     }
 
     return True
