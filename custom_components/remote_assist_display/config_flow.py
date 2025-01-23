@@ -25,14 +25,14 @@ def remote_assist_display_config_option_schema(
                 "default_dashboard_path",
                 default=options.get("default_dashboard_path", None),
             ): str,
-            vol.Optional(
-                "default_timeout_seconds",
-                default=options.get("default_timeout_seconds", None),
-            ): int,
-            vol.Optional(
-                "default_event_type",
-                default=options.get("default_event_type", None),
-            ): str,
+            # vol.Optional(
+            #     "default_timeout_seconds",
+            #     default=options.get("default_timeout_seconds", None),
+            # ): int,
+            # vol.Optional(
+            #     "default_event_type",
+            #     default=options.get("default_event_type", None),
+            # ): str,
         }
     )
 

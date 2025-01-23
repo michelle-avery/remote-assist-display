@@ -49,8 +49,11 @@ class RemoteAssistDisplay:
 
     def update_settings(self, hass, settings):
         """Update the settings for the Remote Assist Display device."""
-        self.settings = settings
+        self.settings.update(settings)
         self.update_entities(hass)
+        hass.create_task(
+            self.send("remote_assist_display/update_settings", settings=self.settings)
+        )
 
     def update_entities(self, hass):
         """Create or update entities for this device."""

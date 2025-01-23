@@ -1,7 +1,11 @@
 import asyncio
+import logging
+from typing import Optional
+
 import webview
 from flask import current_app
-import threading
+
+logger = logging.getLogger(__name__)
 
 
 class DisplayState:
@@ -15,7 +19,7 @@ class DisplayState:
 
     def __init__(self):
         self.websocket_manager = None
-        self.load_card_timer = None
+        self.load_card_timer: Optional[asyncio.Task] = None
 
     def set_websocket_manager(self, manager):
         self.websocket_manager = manager
@@ -24,22 +28,20 @@ class DisplayState:
         """Send the current URL to the server."""
         if self.websocket_manager and self.websocket_manager.client:
             data = {"display": {"current_url": url}}
-            await self.websocket_manager.client.send_command(
-                "remote_assist_display/update",
-                display_id=current_app.config["UNIQUE_ID"],
-                data=data
-            )
-            self.websocket_manager.record_message_sent()
+            display_id = current_app.config["UNIQUE_ID"]
+            command_type = "remote_assist_display/update"
+            message = {"type": command_type, "display_id": display_id, "data": data}
 
-    def load_url(self, url):
+            response = await self.websocket_manager.client.send_command(message)
+            logger.debug(f"Update current URL response: {response}")
+
+    async def load_url(self, url):
         """Load a URL in the webview and update server."""
+        # Update the webview immediately
         webview.windows[0].load_url(url)
-        # Use the event loop from websocket manager to send the update
-        if self.websocket_manager and self.websocket_manager.loop:
-            asyncio.run_coroutine_threadsafe(
-                self.update_current_url(url),
-                self.websocket_manager.loop
-            )
+        # Queue the server update as a separate task
+        if self.websocket_manager and self.websocket_manager.client:
+            asyncio.create_task(self.update_current_url(url))
 
     def set_local_storage(self):
         key = current_app.config["DEVICE_NAME_KEY"]
@@ -48,7 +50,7 @@ class DisplayState:
             localStorage.setItem("{key}", "{value}")
         """)
 
-    def load_card(self, event, expire_time=None):
+    async def load_card(self, event, expire_time=None):
         card_path = event.get("path")
         if card_path and card_path.startswith("/"):
             card_path = card_path[1:]
@@ -56,18 +58,23 @@ class DisplayState:
 
         if card_path:
             new_url = f"{hass_url}/{card_path}"
-            default_dashboard_url = f"{hass_url}/{current_app.config.get('default_dashboard')}"
-            self.load_url(new_url)
+            default_dashboard_url = (
+                f"{hass_url}/{current_app.config.get('default_dashboard')}"
+            )
+            await self.load_url(new_url)
 
-            # Cancel the timer if it's already running
-            if self.load_card_timer:
+            # Cancel any existing timer
+            if self.load_card_timer and not self.load_card_timer.done():
                 self.load_card_timer.cancel()
 
-            # Start a new timer
+            # Start a new async timer if expire_time is set
             if expire_time:
-                self.load_card_timer = threading.Timer(
-                    expire_time,
-                    self.load_url,
-                    args=[default_dashboard_url]
-                )
-                self.load_card_timer.start()
+
+                async def timer_callback():
+                    try:
+                        await asyncio.sleep(expire_time)
+                        await self.load_url(default_dashboard_url)
+                    except asyncio.CancelledError:
+                        pass
+
+                self.load_card_timer = asyncio.create_task(timer_callback())
