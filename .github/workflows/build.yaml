@@ -40,7 +40,7 @@ jobs:
         sudo chmod -R 755 dist/
 
     - name: Upload binary
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: remote-assist-display-app-alpine-arm64
         path: application/dist/remote-assist-display-app-alpine-arm64
@@ -82,7 +82,7 @@ jobs:
         sudo chmod -R 755 build/bin/
 
     - name: Upload APK artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
           name: remote-assist-display-debug.apk
           path: application/build/bin/*.apk
