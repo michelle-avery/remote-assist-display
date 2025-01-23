@@ -122,7 +122,7 @@ class WebSocketManager:
 
         try:
             # Register the display
-            hostname = socket.gethostname()
+            hostname = self.app.config["HOSTNAME"]
             self.logger.debug(f"Hostname is: {hostname}")
             display_id = self.app.config["UNIQUE_ID"]
             self.logger.debug(f"Display ID is: {display_id}")

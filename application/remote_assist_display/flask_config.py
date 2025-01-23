@@ -1,5 +1,12 @@
-from environs import Env
+import socket
 import uuid
+
+from environs import Env
+
+
+def get_hostname() -> str:
+    """Return the device hostname."""
+    return socket.gethostname()
 
 
 def get_mac_address() -> str:
@@ -23,5 +30,9 @@ class Config(object):
     # The local storage key to use for the device name. By default, this is the
     # key used by browser_mod, to  maintain ViewAssist compatibility
     DEVICE_NAME_KEY = env.str("DEVICE_NAME_KEY", "browser_mod-browser-id")
+    # The device's MAC address
+    MAC_ADDRESS = env.str("MAC_ADDRESS", get_mac_address())
+    # The device's hostname
+    HOSTNAME = env.str("HOSTNAME", get_hostname())
     # The unique ID to use for this device
-    UNIQUE_ID = env.str("UNIQUE_ID", f"view-assist-display-{get_mac_address()}")
+    UNIQUE_ID = env.str("UNIQUE_ID", f"remote-assist-display-{MAC_ADDRESS}-{HOSTNAME}")
