@@ -20,6 +20,7 @@ cython = "*"
 [dev-packages]
 pyinstaller = "*"
 buildozer = "*"
+pytest-timeout = "*"
 
 [requires]
 python_version = "3.12"

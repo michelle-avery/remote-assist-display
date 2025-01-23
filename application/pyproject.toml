@@ -1,2 +1,10 @@
 [tool.coverage.run]
 omit = ["tests/*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_fixture_loop_scope = "function"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+timeout = 10
