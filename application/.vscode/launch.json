@@ -10,7 +10,9 @@
             "justMyCode": false,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}",
-                "FLASK_DEBUG": "true"
+                "FLASK_DEBUG": "true",
+                "FULLSCREEN": "false"
+                "LOG_LEVEL": "DEBUG"
             }
         },
         {
