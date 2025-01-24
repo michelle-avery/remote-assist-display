@@ -46,6 +46,7 @@ def register_routes(app):
             await fetch_access_token(
                 url=url,
                 retries=retries,
+                delay=10,
                 app=current_app,
             )
             # Save the URL to our config file
