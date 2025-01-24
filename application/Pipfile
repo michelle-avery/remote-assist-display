@@ -16,6 +16,7 @@ pytest-flask = "*"
 pytest-cov = "*"
 pytest-asyncio = "*"
 cython = "*"
+certifi = "*"
 
 [dev-packages]
 pyinstaller = "*"

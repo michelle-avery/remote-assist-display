@@ -1,7 +1,9 @@
 import asyncio
 import json
-from typing import Any, Dict, Optional, Union
+import ssl
+from typing import Any, Dict, Optional
 
+import certifi
 import websockets
 from flask import current_app
 
@@ -31,7 +33,8 @@ class HomeAssistantWebSocketClient:
             self.logger.info(
                 f"Attempting to connect to Home Assistant WebSocket API at {self.url}"
             )
-            self.connection = await websockets.connect(self.url)
+            ssl_context = ssl.create_default_context(cafile=certifi.where()) if self.url.startswith('wss://') else None
+            self.connection = await websockets.connect(self.url, ssl=ssl_context)
             self.logger.info("WebSocket connection established successfully")
             await self._authenticate()
             self.logger.info("Starting message listener task")
@@ -39,6 +42,9 @@ class HomeAssistantWebSocketClient:
             self._listener_task = asyncio.create_task(self._listen())
         except websockets.exceptions.InvalidURI as e:
             self.logger.error(f"Invalid WebSocket URI: {self.url} - {str(e)}")
+            raise
+        except ssl.SSLCertVerificationError as e:
+            self.logger.error(f"SSL certificate verification failed: {str(e)}")
             raise
         except websockets.exceptions.InvalidHandshake as e:
             self.logger.error(f"WebSocket handshake failed: {str(e)}")

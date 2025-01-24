@@ -1,6 +1,7 @@
 import asyncio
 import json
-from unittest.mock import AsyncMock, Mock, patch
+import ssl
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 import pytest_asyncio
@@ -53,7 +54,8 @@ async def client(mock_app):
 @pytest.mark.asyncio
 async def test_connect_and_authenticate(client, mock_websocket):
     """Test successful connection and authentication."""
-    with patch("websockets.connect", AsyncMock(return_value=mock_websocket)):
+    with patch("websockets.connect", AsyncMock(return_value=mock_websocket)), \
+         patch("ssl.create_default_context") as mock_create_context:
         mock_websocket.recv.side_effect = [
             json.dumps({"type": "auth_required"}),
             json.dumps({"type": "auth_ok"}),
@@ -67,6 +69,54 @@ async def test_connect_and_authenticate(client, mock_websocket):
         assert auth_message["type"] == "auth"
         assert auth_message["access_token"] == "test_token"
 
+
+@pytest.mark.asyncio
+async def test_connect_wss_uses_certifi(client, mock_websocket):
+    """Test that WSS connections create and use SSL context with certifi."""
+    client.url = "wss://test:8123"
+    mock_ssl_context = MagicMock()
+    mock_certifi_path = "/path/to/cacert.pem"
+    
+    with patch("websockets.connect", AsyncMock(return_value=mock_websocket)) as mock_connect, \
+         patch("certifi.where", return_value=mock_certifi_path), \
+         patch("ssl.create_default_context", return_value=mock_ssl_context) as mock_create_context:
+        
+        mock_websocket.recv.side_effect = [
+            json.dumps({"type": "auth_required"}),
+            json.dumps({"type": "auth_ok"}),
+        ]
+        
+        await client.connect()
+        
+        mock_create_context.assert_called_once_with(cafile=mock_certifi_path)
+        mock_connect.assert_called_once_with(client.url, ssl=mock_ssl_context)
+
+@pytest.mark.asyncio
+async def test_connect_ws_no_ssl(client, mock_websocket):
+    """Test that WS connections don't create SSL context."""
+    client.url = "ws://test:8123"  # Non-WSS URL
+    
+    with patch("websockets.connect", AsyncMock(return_value=mock_websocket)) as mock_connect, \
+         patch("ssl.create_default_context") as mock_create_context:
+        
+        mock_websocket.recv.side_effect = [
+            json.dumps({"type": "auth_required"}),
+            json.dumps({"type": "auth_ok"}),
+        ]
+        
+        await client.connect()
+        
+        mock_create_context.assert_not_called()
+        mock_connect.assert_called_once_with(client.url, ssl=None)
+
+@pytest.mark.asyncio
+async def test_connect_ssl_verification_error(client):
+    """Test handling of SSL certificate verification errors."""
+    client.url = "wss://test:8123"
+    
+    with patch("websockets.connect", AsyncMock(side_effect=ssl.SSLCertVerificationError("certificate verify failed"))):
+        with pytest.raises(ssl.SSLCertVerificationError, match="certificate verify failed"):
+            await client.connect()
 
 @pytest.mark.asyncio
 async def test_connect_auth_failure(client, mock_websocket):
