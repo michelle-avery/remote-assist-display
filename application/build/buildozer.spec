@@ -7,7 +7,7 @@ title = Remote Assist Display
 package.name = RemoteAssistDisplay
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = com.caffeinatedfirefly.remoteassistdisplay
+package.domain = com.caffeinatedfirefly
 
 # (str) Source code where the main.py live
 source.dir = ../
@@ -37,7 +37,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy,pywebview,flask[async]==2.3.3,asgiref>=3.2,werkzeug==2.3.7,websockets,environs,requests,pillow,markupsafe==2.1.1,jinja2,itsdangerous,click,blinker,marshmallow,packaging,python-dotenv,proxy-tools,bottle,typing-extensions
+requirements = python3,certifi,kivy,pywebview,flask[async]==2.3.3,asgiref>=3.2,werkzeug==2.3.7,websockets,environs,requests,pillow,markupsafe==2.1.1,jinja2,itsdangerous,click,blinker,marshmallow,packaging,python-dotenv,proxy-tools,bottle,typing-extensions
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
