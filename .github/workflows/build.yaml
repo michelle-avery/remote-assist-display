@@ -3,6 +3,9 @@ name: Build
 on:
   workflow_run:
     workflows: ["Tests"]
+    paths:
+      - 'application/**'
+      - '.github/workflows/build.yaml'
     types:
       - completed
 

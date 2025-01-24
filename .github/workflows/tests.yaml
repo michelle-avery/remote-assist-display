@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'application/**'
+      - 'custom_components/**'
       - '.github/workflows/**'
   pull_request:
     branches: [main]
@@ -39,5 +40,35 @@ jobs:
           pipenv install --dev
 
       - name: Run tests
+        run: |
+          pipenv run pytest tests/ -v
+
+  test-custom-component:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./custom_components
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Install pipenv
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipenv
+
+      - name: Install Python dependencies
+        run: |
+          pipenv install
+
+      - name: Run tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           pipenv run pytest tests/ -v
