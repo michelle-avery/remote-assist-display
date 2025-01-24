@@ -20,6 +20,12 @@ def get_mac_address() -> str:
 class Config(object):
     env = Env()
 
+    # Logging and debug settings
+    LOG_LEVEL = env.str("LOG_LEVEL", "INFO").upper()
+    FLASK_DEBUG = env.bool("FLASK_DEBUG", False)
+    FULLSCREEN = env.bool("FULLSCREEN", True)
+    WEBVIEW_DEBUG = env.bool("WEBVIEW_DEBUG", False)
+
     SEND_FILE_MAX_AGE_DEFAULT = env.int("SEND_FILE_MAX_AGE_DEFAULT", 1)
     # Default timeout of dashboard in seconds
     DEFAULT_DASHBOARD_TIMEOUT =  env.int("DEFAULT_DASHBOARD_TIMEOUT", 30)
