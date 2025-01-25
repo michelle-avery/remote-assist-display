@@ -156,7 +156,8 @@ android.accept_sdk_license = True
 # (str) Full name including package path of the Java class that implements Python Service
 # use that parameter to set custom Java class which extends PythonService
 #android.service_class_name = org.kivy.android.PythonService
-p4a.extra_args = --extra-manifest-application-arguments "android:usesCleartextTraffic=\"true\""
+p4a.extra_args = --extra-manifest-application-arguments "android:networkSecurityConfig=\"@xml/network_security_config\" android:usesCleartextTraffic=\"true\""
+
 
 # (str) Android app theme, default is ok for Kivy-based app
 # android.apptheme = "@android:style/Theme.NoTitleBar"
@@ -199,7 +200,7 @@ android.add_jars =/opt/pywebview/pywebview-android.jar
 # 3) A directory, here 'legal_resources' must contain one or more directories, 
 # each of a resource kind:  drawable, xml, etc...
 # android.add_resources = legal_resources
-#android.add_resources =
+android.add_resources =  network_security_config.xml:xml/network_security_config.xml,raw/isrg_root_x1.der:raw/isrg_root_x1.der,raw//isrg_root_x1.der:raw/isrg_root_x2.der
 
 # (list) Gradle dependencies to add
 #android.gradle_dependencies =
