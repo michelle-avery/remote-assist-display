@@ -12,6 +12,11 @@ def create_app():
     app.config.from_object(Config)
     app.debug = app.config['FLASK_DEBUG']
 
+    # Changing environment variables on andoroid is challenging, and we definitely
+    # want to see debug logs on android, so we'll set the log level to DEBUG
+    # if we are running on android.
+    if app.config['IS_ANDROID']:
+        app.config['LOG_LEVEL'] = 'DEBUG'
     log_level = getattr(logging, app.config['LOG_LEVEL'])
     
     logs_dir = os.path.join(os.path.dirname(__file__), '..', 'logs')
