@@ -39,6 +39,7 @@ class DisplayState:
         """Load a URL in the webview and update server."""
         # Update the webview immediately
         webview.windows[0].load_url(url)
+        self.set_local_storage()
         # Queue the server update as a separate task
         if self.websocket_manager and self.websocket_manager.client:
             asyncio.create_task(self.update_current_url(url))
@@ -62,6 +63,7 @@ class DisplayState:
                 f"{hass_url}/{current_app.config.get('default_dashboard')}"
             )
             await self.load_url(new_url)
+            self.set_local_storage()
 
             # Cancel any existing timer
             if self.load_card_timer and not self.load_card_timer.done():
