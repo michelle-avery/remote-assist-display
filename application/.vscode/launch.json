@@ -11,7 +11,7 @@
             "env": {
                 "PYTHONPATH": "${workspaceFolder}",
                 "FLASK_DEBUG": "true",
-                "FULLSCREEN": "false"
+                "FULLSCREEN": "false",
                 "LOG_LEVEL": "DEBUG"
             }
         },
