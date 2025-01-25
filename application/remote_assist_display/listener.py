@@ -1,8 +1,6 @@
-import asyncio
 import logging
 from typing import Optional
 
-import webview
 from flask import Flask
 
 from .state import DisplayState
