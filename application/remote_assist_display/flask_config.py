@@ -8,7 +8,6 @@ def get_hostname() -> str:
     """Return the device hostname."""
     return socket.gethostname()
 
-
 def get_mac_address() -> str:
     """Return MAC address formatted as hex with no colons."""
     return "".join(
@@ -16,6 +15,12 @@ def get_mac_address() -> str:
             ::-1
         ]
     )
+
+def check_android(env: Env) -> bool:
+    """Check if we are running on an Android device."""
+    if bool(env.int("P4A_MINSDK", 0)):
+        return True
+    return False
 
 class Config(object):
     env = Env()
@@ -42,3 +47,5 @@ class Config(object):
     HOSTNAME = env.str("HOSTNAME", get_hostname())
     # The unique ID to use for this device
     UNIQUE_ID = env.str("UNIQUE_ID", f"remote-assist-display-{MAC_ADDRESS}-{HOSTNAME}")
+    # Are we running on android?
+    IS_ANDROID = check_android(env)
