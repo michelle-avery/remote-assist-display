@@ -5,6 +5,7 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.typing import ConfigType
 
@@ -36,4 +37,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     async_setup_services(hass)
     await async_setup_ws_api(hass)
 
+    return True
+
+
+async def async_remove_config_entry_device(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    device_entry: dr.DeviceEntry,
+) -> bool:
+    """Remove a device from the Remote Assist Display integration."""
+    dr.async_get(hass).async_remove_device(device_entry.id)
     return True
