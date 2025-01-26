@@ -15,7 +15,11 @@ from .const import (
 )
 
 NAVIGATE_URL_SCHEMA = vol.Schema(
-    {vol.Required("target"): cv.ensure_list, vol.Required("url"): cv.string}
+    {
+        vol.Optional("target"): cv.ensure_list, 
+        vol.Optional("device_id"): cv.ensure_list, 
+        vol.Required("url"): cv.string
+     }
 )
 
 NAVIGATE_SCHEMA = vol.Schema(
