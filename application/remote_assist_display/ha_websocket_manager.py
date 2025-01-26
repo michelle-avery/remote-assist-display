@@ -33,6 +33,7 @@ class WebSocketManager:
 
         self.app = app
         self.token: Optional[str] = None
+        self.hass_url: Optional[str] = None
         self.ws_url: Optional[str] = None
         self.client: Optional[HomeAssistantWebSocketClient] = None
         self.display_state = get_display_state()
@@ -64,6 +65,7 @@ class WebSocketManager:
 
         async def _initialize():
             try:
+                self.hass_url = url
                 self.ws_url = url.replace("http", "ws") + "/api/websocket"
                 self.token = await fetch_access_token(url=url, app=self.app)
 
@@ -119,7 +121,7 @@ class WebSocketManager:
                 if "Authentication failed" in str(e):
                     # Force a re-authentication
                     self.logger.warning("Forcing re-authentication")
-                    self.token = await fetch_access_token(url=self.ws_url, app=self.app, force=True)
+                    self.token = await fetch_access_token(url=self.hass_url, app=self.app, force=True)
 
                 await asyncio.sleep(5)  # Wait before retrying
 
