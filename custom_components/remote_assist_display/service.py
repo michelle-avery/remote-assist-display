@@ -74,7 +74,6 @@ async def _process_targets(hass, targets, command, **command_args):
         try:
             display_id, display = await _get_display_for_target(hass, target)
 
-            # Create the task for the command
             hass.create_task(display.send(command, **command_args))
 
             results.append(

@@ -62,7 +62,6 @@ async def test_service_call_with_correct_target_succeeds(hass: HomeAssistant, mo
 
 async def test_service_call_with_invalid_target_fails(hass: HomeAssistant, setup_services):
     """Test service call fails with invalid target."""
-    # Initialize displays data structure
     
     hass.data[DOMAIN] = {"displays": {}}
     
@@ -74,7 +73,7 @@ async def test_service_call_with_invalid_target_fails(hass: HomeAssistant, setup
             "path": "/test"
         },
         blocking=True,
-        return_response=True  # This will make async_call return success/failure
+        return_response=True 
     )
     
     assert response["success"] is False
