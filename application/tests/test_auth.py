@@ -1,6 +1,9 @@
 import json
+
 import pytest
+
 from remote_assist_display.auth import TokenStorage, fetch_access_token
+
 
 class TestTokenStorage:
     def test_set_and_get_token(self):
@@ -128,3 +131,23 @@ class TestFetchAccessToken:
 
         with pytest.raises(Exception):
             await fetch_access_token(app, retries=1)
+
+    @pytest.mark.asyncio
+    async def test_fetch_token_force_flag(self, mock_webview, app):
+        """Test force flag clears storage and fetches new token."""
+        mock_wv, mock_window = mock_webview
+        
+        # Set initial token
+        initial_token = "initial-token"
+        TokenStorage.set_token(initial_token)
+        
+        # Mock new token response
+        new_token = "new-token-789"
+        mock_window.evaluate_js.return_value = json.dumps({"access_token": new_token})
+
+        # Fetch with force=True
+        token = await fetch_access_token(app, force=True)
+        
+        # Verify storage was cleared and new token was fetched
+        assert token == new_token
+        mock_window.evaluate_js.assert_called_once()
