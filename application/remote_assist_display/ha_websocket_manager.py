@@ -1,7 +1,10 @@
 import asyncio
 import socket
 import threading
+from operator import ge
 from typing import Optional
+
+from flask import g
 
 from .auth import fetch_access_token
 from .home_assistant_ws_client import HomeAssistantWebSocketClient
@@ -113,6 +116,11 @@ class WebSocketManager:
                 self.logger.error(
                     f"Error in connection monitor: {str(e)}", exc_info=True
                 )
+                if "Authentication failed" in str(e):
+                    # Force a re-authentication
+                    self.logger.warning("Forcing re-authentication")
+                    self.token = await fetch_access_token(url=self.ws_url, app=self.app, force=True)
+
                 await asyncio.sleep(5)  # Wait before retrying
 
     async def register(self):

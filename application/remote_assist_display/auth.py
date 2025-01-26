@@ -1,6 +1,8 @@
-import webview
-import json
 import asyncio
+import json
+
+import webview
+
 
 class TokenStorage:
     _access_token = None
@@ -18,10 +20,13 @@ class TokenStorage:
         cls._access_token = None
 
 
-async def fetch_access_token(app, retries=5, delay=1, window=0, url=None):
-    token = TokenStorage.get_token()
-    if token:
-        return token
+async def fetch_access_token(app, retries=5, delay=1, window=0, url=None, force=False):
+    if force:
+        TokenStorage.clear_token()
+    else:
+        token = TokenStorage.get_token()
+        if token:
+            return token
 
     main_window = webview.windows[window]
 
