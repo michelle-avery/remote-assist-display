@@ -10,8 +10,24 @@ from homeassistant.config_entries import (
     OptionsFlow,
 )
 from homeassistant.core import HomeAssistant, callback
+import homeassistant.helpers.config_validation as cv
 
-from .const import DOMAIN
+from .const import (
+    DOMAIN,
+    DEFAULT_HOME_ASSISTANT_DASHBOARD,
+    DEFAULT_DEVICE_NAME_STORAGE_KEY,
+)
+
+
+def empty_str_to_default(default_value: str) -> Any:
+    """Convert empty string to default value."""
+
+    def _convert(value: Any) -> Any:
+        if str(value).strip() == "":
+            return default_value
+        return value
+
+    return _convert
 
 
 def remote_assist_display_config_option_schema(
@@ -23,16 +39,16 @@ def remote_assist_display_config_option_schema(
         {
             vol.Optional(
                 "default_dashboard_path",
-                default=options.get("default_dashboard_path", None),
+                default=options.get(
+                    "default_dashboard_path", DEFAULT_HOME_ASSISTANT_DASHBOARD
+                ),
             ): str,
-            # vol.Optional(
-            #     "default_timeout_seconds",
-            #     default=options.get("default_timeout_seconds", None),
-            # ): int,
-            # vol.Optional(
-            #     "default_event_type",
-            #     default=options.get("default_event_type", None),
-            # ): str,
+            vol.Optional(
+                "device_name_storage_key",
+                default=options.get(
+                    "device_name_storage_key", DEFAULT_DEVICE_NAME_STORAGE_KEY
+                ),
+            ): str,
         }
     )
 
@@ -46,10 +62,17 @@ class RemoteAssistDisplayOptionsFlowHandler(OptionsFlow):
         """Manage the options."""
 
         if user_input is not None:
+            # Transform empty strings to defaults
+            if not user_input.get("default_dashboard_path", "").strip():
+                user_input["default_dashboard_path"] = DEFAULT_HOME_ASSISTANT_DASHBOARD
+            if not user_input.get("device_name_storage_key", "").strip():
+                user_input["device_name_storage_key"] = DEFAULT_DEVICE_NAME_STORAGE_KEY
+
             return self.async_create_entry(
                 title="Remote Assist Display",
                 data=user_input,
             )
+
         options: dict[str, Any] = self.config_entry.options
         schema = remote_assist_display_config_option_schema(self.hass, options)
         return self.async_show_form(step_id="init", data_schema=schema)
