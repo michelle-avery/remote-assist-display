@@ -1,11 +1,6 @@
 import asyncio
-import socket
 import threading
-from operator import ge
 from typing import Optional
-
-from flask import g
-from webview import settings
 
 from .auth import fetch_access_token
 from .home_assistant_ws_client import HomeAssistantWebSocketClient
