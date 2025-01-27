@@ -6,8 +6,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
     DATA_ADDERS,
+    DATA_CONFIG_ENTRY,
     DOMAIN,
-    DEFAULT_DISPLAY_OPTIONS,
     DEFAULT_HOME_ASSISTANT_DASHBOARD,
     DEFAULT_DEVICE_NAME_STORAGE_KEY,
 )
@@ -22,7 +22,6 @@ async def async_setup_platform(
 ) -> None:
     """Set up the text platform."""
     hass.data[DOMAIN][DATA_ADDERS]["text"] = async_add_entities
-    hass.data[DOMAIN][DEFAULT_DISPLAY_OPTIONS] = dict(config_entry.options)
 
 
 async def async_setup_entry(
@@ -62,7 +61,7 @@ class DefaultDashboardText(RADEntity, RestoreText):
             try:
                 val = self._attr_native_value
             except AttributeError:
-                val = self.coordinator.hass.data[DOMAIN][DEFAULT_DISPLAY_OPTIONS].get(
+                val = self.coordinator.hass.data[DOMAIN][DATA_CONFIG_ENTRY].options.get(
                     "default_dashboard_path", DEFAULT_HOME_ASSISTANT_DASHBOARD
                 )
         if len(str(val)) > 255:
@@ -79,6 +78,7 @@ class DefaultDashboardText(RADEntity, RestoreText):
         self.display.update_settings(self.hass, data)
         self._data.update(data)
         self.async_write_ha_state()
+
 
 class DeviceStorageKeyText(RADEntity, RestoreText):
     def __init__(
@@ -108,7 +108,7 @@ class DeviceStorageKeyText(RADEntity, RestoreText):
             try:
                 val = self._attr_native_value
             except AttributeError:
-                val = self.coordinator.hass.data[DOMAIN][DEFAULT_DISPLAY_OPTIONS].get(
+                val = self.coordinator.hass.data[DOMAIN][DATA_CONFIG_ENTRY].options.get(
                     "device_name_storage_key", DEFAULT_DEVICE_NAME_STORAGE_KEY
                 )
         return val

@@ -1,25 +1,18 @@
 """Test the Remote Assist Display text platform."""
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 import pytest
-from homeassistant.core import HomeAssistant
 
-from custom_components.remote_assist_display.const import DOMAIN, DEFAULT_HOME_ASSISTANT_DASHBOARD, DEFAULT_DEVICE_NAME_STORAGE_KEY
+from custom_components.remote_assist_display.const import DOMAIN, DEFAULT_HOME_ASSISTANT_DASHBOARD, DEFAULT_DEVICE_NAME_STORAGE_KEY, DATA_CONFIG_ENTRY
 from custom_components.remote_assist_display.text import DefaultDashboardText, DeviceStorageKeyText
 
 
 @pytest.fixture
-def mock_coordinator():
+def mock_coordinator(config_entry, hass):
     """Create a mock coordinator."""
     coordinator = Mock()
-    coordinator.hass = Mock()
-    coordinator.hass.data = {
-        DOMAIN: {
-            "default_display_options": {
-                "default_dashboard_path": "/test-dashboard"
-            }
-        }
-    }
+    coordinator.hass = hass
+    coordinator.hass.data[DOMAIN][DATA_CONFIG_ENTRY] = config_entry
     return coordinator
 
 
@@ -69,7 +62,6 @@ async def test_dashboard_native_value_fallback_to_attr(mock_coordinator, mock_di
         display=mock_display,
     )
     
-    # Set up empty data and a fallback value
     entity.coordinator.data = {}
     entity._attr_native_value = "/lovelace/fallback"
     
@@ -84,11 +76,9 @@ async def test_dashboard_native_value_fallback_to_default_options(mock_coordinat
         display=mock_display,
     )
     
-    # Set up empty data and no attr_native_value
     entity.coordinator.data = {}
     
-    # The mock_coordinator fixture already sets up default_display_options with "/test-dashboard"
-    assert entity.native_value == "/test-dashboard"
+    assert entity.native_value == DEFAULT_HOME_ASSISTANT_DASHBOARD
 
 
 async def test_dashboard_native_value_truncation(mock_coordinator, mock_display):
@@ -99,7 +89,6 @@ async def test_dashboard_native_value_truncation(mock_coordinator, mock_display)
         display=mock_display,
     )
     
-    # Create a string longer than 255 characters
     long_path = "/lovelace/" + "x" * 300
     
     entity.coordinator.data = {
@@ -122,16 +111,13 @@ async def test_dashboard_async_set_value(hass, mock_coordinator, mock_display):
         display=mock_display,
     )
     
-    # Set up required attributes
     mock_coordinator.hass = hass
     entity.hass = hass
-    mock_coordinator.data = {}  # Initialize empty data
+    mock_coordinator.data = {}
     
-    # Mock async_write_ha_state
     with patch.object(entity, 'async_write_ha_state') as mock_write_state:
         await entity.async_set_value("/lovelace/new")
         
-        # Verify display settings were updated
         mock_display.update_settings.assert_called_once_with(
             hass,
             {
@@ -140,10 +126,8 @@ async def test_dashboard_async_set_value(hass, mock_coordinator, mock_display):
             }
         )
         
-        # Verify state was written
         assert entity._value == "/lovelace/new"
         
-        # Verify async_write_ha_state was called
         mock_write_state.assert_called_once()
 
 async def test_device_storage_key_text_initialization(mock_coordinator, mock_display):
@@ -182,7 +166,6 @@ async def test_device_storage_key_native_value_fallback_to_attr(mock_coordinator
         display=mock_display,
     )
     
-    # Set up empty data and a fallback value
     entity.coordinator.data = {}
     entity._attr_native_value = "fallback-key"
     
@@ -196,8 +179,6 @@ async def test_device_storage_key_native_value_fallback_to_default_options(mock_
         display=mock_display,
     )
     
-    # Set up empty data and no attr_native_value
     entity.coordinator.data = {}
     
-    # The mock_coordinator fixture already sets up default_display_options with "browser_mod-browser-id"
     assert entity.native_value == DEFAULT_DEVICE_NAME_STORAGE_KEY
