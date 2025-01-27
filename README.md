@@ -40,6 +40,8 @@ Once the component is in place, add it via the integrations dashboard or click h
 It's possible to set default dashboards on a per-device basis, but if you'd like to use the default dashboard on all of your devices,
 you can sest that now from the integration's configuration page. Otherwise, new devices added will default to using the default
 lovelace dashboard, and can be individually changed.
+
+By default, each device will store its unique id in the `browser_mod-browser-id` key of the browser's local storage. This is intended for ease of compatibility  with ViewAssist, but if you are also using browser mod, and you wish to change this, you can change this default value as well in the configuration, or on a per-system basis. 
     
 ## The Remote Assist Display GUI Application
 The GUI application is a Python application that uses Pywebview to display a web page in a window. The application 

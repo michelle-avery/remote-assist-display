@@ -1,6 +1,4 @@
 """Fixtures for Remote Assist Display integration tests."""
-from unittest.mock import patch
-
 import pytest
 from homeassistant.const import CONF_DOMAIN
 from homeassistant.core import HomeAssistant
@@ -19,6 +17,7 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 @pytest.fixture
 def hass(hass: HomeAssistant):
     """Return an initialized Home Assistant instance."""
+    hass.data.update({DOMAIN: {}})
     return hass
 
 

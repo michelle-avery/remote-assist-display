@@ -1,10 +1,6 @@
 import asyncio
-import socket
 import threading
-from operator import ge
 from typing import Optional
-
-from flask import g
 
 from .auth import fetch_access_token
 from .home_assistant_ws_client import HomeAssistantWebSocketClient
@@ -159,6 +155,11 @@ class WebSocketManager:
             self.logger.debug(f"Default dashboard: {default_dashboard}")
             self.app.config["default_dashboard"] = default_dashboard
 
+            device_storage_key = settings_response["settings"].get("device_storage_key")
+            self.logger.debug(f"Device storage key: {device_storage_key}")
+            if device_storage_key:
+                self.app.config["DEVICE_NAME_KEY"] = device_storage_key            
+            
             # Update display state
             self.logger.debug("Updating the display state with default dashboard")
             dashboard_url = f"{self.app.config['url']}/{default_dashboard}"

@@ -38,9 +38,6 @@ class Config(object):
     TOKEN_RETRY_LIMIT = env.int("TOKEN_RETRY_LIMIT", 10)
     # Event type to listen for
     EVENT_TYPE = env.str("EVENT_TYPE", "remote_assist_display_navigate")
-    # The local storage key to use for the device name. By default, this is the
-    # key used by browser_mod, to  maintain ViewAssist compatibility
-    DEVICE_NAME_KEY = env.str("DEVICE_NAME_KEY", "browser_mod-browser-id")
     # The device's MAC address
     MAC_ADDRESS = env.str("MAC_ADDRESS", get_mac_address())
     # The device's hostname

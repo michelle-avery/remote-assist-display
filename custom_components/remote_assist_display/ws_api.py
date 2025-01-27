@@ -71,7 +71,19 @@ async def async_setup_ws_api(hass):
             default_dashboard = default_dashboard.native_value
         else:
             default_dashboard = None
-        settings = {"settings": {"default_dashboard": default_dashboard}}
+        device_storage_key =  display.entities.get("device_storage_key", None)
+        if device_storage_key:
+            device_storage_key = device_storage_key.native_value
+        else:
+            device_storage_key = None
+
+        
+        settings = {
+                    "settings": {
+                        "default_dashboard": default_dashboard,
+                        "device_storage_key": device_storage_key,
+                        }
+                     }
         connection.send_message(websocket_api.result_message(msg["id"], settings))
 
     @websocket_api.websocket_command(
