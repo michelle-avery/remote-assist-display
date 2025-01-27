@@ -9,7 +9,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import DATA_ADDERS, DATA_DISPLAYS, DOMAIN
 from .sensor import RADSensor
-from .text import DefaultDashboardText
+from .text import DefaultDashboardText, DeviceStorageKeyText
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -78,6 +78,12 @@ class RemoteAssistDisplay:
             new = DefaultDashboardText(coordinator, display_id, self)
             adder([new])
             self.entities["default_dashboard"] = new
+        
+        if "device_storage_key" not in self.entities:
+            adder = hass.data[DOMAIN][DATA_ADDERS]["text"]
+            new = DeviceStorageKeyText(coordinator, display_id, self)
+            adder([new])
+            self.entities["device_storage_key"] = new
 
         hass.create_task(
             self.send(

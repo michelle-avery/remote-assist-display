@@ -111,6 +111,10 @@ class DeviceStorageKeyText(RADEntity, RestoreText):
                 val = self.coordinator.hass.data[DOMAIN][DATA_CONFIG_ENTRY].options.get(
                     "device_name_storage_key", DEFAULT_DEVICE_NAME_STORAGE_KEY
                 )
+            if not val:
+                val = self.coordinator.hass.data[DOMAIN][DATA_CONFIG_ENTRY].options.get(
+                    "device_name_storage_key", DEFAULT_DEVICE_NAME_STORAGE_KEY
+                )
         return val
 
     async def async_set_value(self, value: str) -> None:
