@@ -24,7 +24,7 @@ def check_android(env: Env) -> bool:
 
 class Config(object):
     env = Env()
-
+    VERSION = "0.0.1"
     # Logging and debug settings
     LOG_LEVEL = env.str("LOG_LEVEL", "INFO").upper()
     FLASK_DEBUG = env.bool("FLASK_DEBUG", False)

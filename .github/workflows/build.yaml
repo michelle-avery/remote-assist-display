@@ -3,15 +3,42 @@ name: Build
 on:
   workflow_run:
     workflows: ["Tests"]
-    paths:
-      - 'application/**'
-      - '.github/workflows/build.yaml'
     types:
       - completed
 
 jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.check.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Get base SHA
+        id: base
+        run: |
+          echo "sha=$(curl -s -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
+            ${{ github.event.workflow_run.repository.url }}/actions/runs/${{ github.event.workflow_run.id }} \
+            | jq -r '.head_sha')" >> $GITHUB_OUTPUT
+
+      - name: Check for relevant changes
+        id: check
+        run: |
+          git diff --name-only ${{ steps.base.outputs.sha }} HEAD > changes.txt
+          echo "Changed files:"
+          cat changes.txt
+          
+          if grep -q "^application/" changes.txt || grep -q "^.github/workflows/build.yaml$" changes.txt; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
   build-alpine-arm64-application:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: check-changes
+    if: ${{ github.event.workflow_run.conclusion == 'success' && needs.check-changes.outputs.should_build == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -42,14 +69,24 @@ jobs:
         sudo chown -R $USER:$USER dist/
         sudo chmod -R 755 dist/
 
+    - name: Get short SHA
+      id: sha
+      run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+    - name: Rename binary
+      run: |
+        cd dist
+        mv remote-assist-display-app-alpine-arm64 remote-assist-display-${{ steps.sha.outputs.sha }}-alpine-arm64
+
     - name: Upload binary
       uses: actions/upload-artifact@v4
       with:
-        name: remote-assist-display-app-alpine-arm64
-        path: application/dist/remote-assist-display-app-alpine-arm64
+        name: remote-assist-display-${{ steps.sha.outputs.sha }}-alpine-arm64
+        path: application/dist/remote-assist-display-${{ steps.sha.outputs.sha }}-alpine-arm64
 
   build-android:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: check-changes
+    if: ${{ github.event.workflow_run.conclusion == 'success' && needs.check-changes.outputs.should_build == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -84,8 +121,17 @@ jobs:
         sudo chown -R $USER:$USER build/bin/
         sudo chmod -R 755 build/bin/
 
+    - name: Get short SHA
+      id: sha
+      run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+    - name: Rename APK
+      run: |
+        cd build/bin
+        mv *.apk remote-assist-display-${{ steps.sha.outputs.sha }}.apk
+
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
-          name: remote-assist-display-debug.apk
-          path: application/build/bin/*.apk
+          name: remote-assist-display-${{ steps.sha.outputs.sha }}.apk
+          path: application/build/bin/remote-assist-display-${{ steps.sha.outputs.sha }}.apk

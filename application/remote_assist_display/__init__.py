@@ -43,6 +43,7 @@ def create_app():
     app.logger.addHandler(console_handler)
     
     app.logger.handlers = [file_handler, console_handler]
+    app.logger.info(f"Starting Remote Assist Display version {app.config['VERSION']}")
     gui_dir = os.path.join(os.path.dirname(__file__), "templates")  # development path
     if not os.path.exists(gui_dir):  # frozen executable path
         gui_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
