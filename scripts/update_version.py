@@ -49,11 +49,9 @@ def update_flask_config():
         lines = f.readlines()
     
     version = read_version()
-    print(f"Updating version to: {version}")
     # Update version line
     for i, line in enumerate(lines):
         if line.strip().startswith('VERSION ='):
-            print(f"Updating line {i}: {line.strip()}")
             lines[i] = f'    VERSION = "{version}"\n'
     
     # Write back
