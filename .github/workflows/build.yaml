@@ -16,26 +16,25 @@ jobs:
         with:
           fetch-depth: 0
       
-      - name: Get base SHA
-        id: base
-        run: |
-          echo "sha=$(curl -s -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
-            ${{ github.event.workflow_run.repository.url }}/actions/runs/${{ github.event.workflow_run.id }} \
-            | jq -r '.head_sha')" >> $GITHUB_OUTPUT
-
-      - name: Check for relevant changes
+      - name: Get changed files
         id: check
         run: |
-          git diff --name-only ${{ steps.base.outputs.sha }} HEAD > changes.txt
-          echo "Changed files:"
-          cat changes.txt
+          # Get the commit before the push that triggered the workflow
+          BASE_SHA=$(git rev-parse ${{ github.event.workflow_run.head_sha }}^)
           
-          if grep -q "^application/" changes.txt || grep -q "^.github/workflows/build.yaml$" changes.txt; then
+          # Get the list of changed files
+          CHANGED_FILES=$(git diff --name-only $BASE_SHA ${{ github.event.workflow_run.head_sha }})
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          # Check for changes in application directory or workflow file
+          if echo "$CHANGED_FILES" | grep -q "^application/" || echo "$CHANGED_FILES" | grep -q "^.github/workflows/build.yaml$"; then
             echo "changed=true" >> $GITHUB_OUTPUT
           else
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
-
+          
   build-alpine-arm64-application:
     needs: check-changes
     if: ${{ github.event.workflow_run.conclusion == 'success' && needs.check-changes.outputs.should_build == 'true' }}
