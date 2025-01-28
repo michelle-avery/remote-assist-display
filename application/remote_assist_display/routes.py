@@ -38,7 +38,9 @@ def register_routes(app):
     @app.route("/connect", methods=["POST"])
     async def connect():
         url = request.form.get("haUrl")
-        await load_dashboard(url)
+        # Since we won't have settings from the server yet, we can't set the 
+        # device name in localStorage.
+        await load_dashboard(url, local_storage=False)
         try:
             retries = current_app.config.get(
                 "TOKEN_RETRY_LIMIT", 5
@@ -51,7 +53,7 @@ def register_routes(app):
             )
             # Save the URL to our config file
             save_url(url)
-            await load_dashboard(url_for("waiting"))
+            await load_dashboard(url_for("waiting"), local_storage=False)
             return "", HTTPStatus.OK
 
         except Exception as e:
