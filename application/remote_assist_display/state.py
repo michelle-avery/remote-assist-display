@@ -35,11 +35,12 @@ class DisplayState:
             response = await self.websocket_manager.client.send_command(message)
             logger.debug(f"Update current URL response: {response}")
 
-    async def load_url(self, url):
+    async def load_url(self, url, local_storage=True):
         """Load a URL in the webview and update server."""
         # Update the webview immediately
         webview.windows[0].load_url(url)
-        self.set_local_storage()
+        if local_storage:
+            self.set_local_storage()
         # Queue the server update as a separate task
         if self.websocket_manager and self.websocket_manager.client:
             asyncio.create_task(self.update_current_url(url))
