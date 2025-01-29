@@ -8,6 +8,7 @@ from homeassistant.helpers import device_registry, entity_registry
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import DATA_ADDERS, DATA_DISPLAYS, DOMAIN
+from .select import RADAssistSatelliteSelect
 from .sensor import RADSensor
 from .text import DefaultDashboardText, DeviceStorageKeyText
 
@@ -78,12 +79,18 @@ class RemoteAssistDisplay:
             new = DefaultDashboardText(coordinator, display_id, self)
             adder([new])
             self.entities["default_dashboard"] = new
-        
+
         if "device_storage_key" not in self.entities:
             adder = hass.data[DOMAIN][DATA_ADDERS]["text"]
             new = DeviceStorageKeyText(coordinator, display_id, self)
             adder([new])
             self.entities["device_storage_key"] = new
+
+        if "assist_satellite" not in self.entities:
+            adder = hass.data[DOMAIN][DATA_ADDERS]["select"]
+            new = RADAssistSatelliteSelect(coordinator, display_id, self)
+            adder([new])
+            self.entities["assist_satellite"] = new
 
         hass.create_task(
             self.send(
