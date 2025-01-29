@@ -66,7 +66,7 @@ class RADAssistSatelliteSelect(RADEntity, SelectEntity, restore_state.RestoreEnt
 
         self._attr_options = sorted(satellite_entitites)
 
-        if (last_state := await self.async_get_last_state()) is None:
+        if (last_state := await self.async_get_last_state()) is not None:
             if last_state.state in self._attr_options:
                 self._attr_current_option = last_state.state
             else:
