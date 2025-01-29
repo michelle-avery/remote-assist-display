@@ -7,11 +7,6 @@ from custom_components.remote_assist_display.const import DOMAIN, NAVIGATE_SERVI
 from custom_components.remote_assist_display.service import async_setup_services
 
 
-class MockDisplay:
-    """Mock display class for testing."""
-    def __init__(self):
-        self.send = Mock()
-
 @pytest.fixture
 async def mock_device(hass: HomeAssistant, config_entry):
     """Create a mock device for testing."""
@@ -28,10 +23,9 @@ async def setup_services(hass: HomeAssistant):
     async_setup_services(hass)
     await hass.async_block_till_done()
 
-async def test_service_call_with_device_id_target(hass: HomeAssistant, mock_device, setup_services):
+async def test_service_call_with_device_id_target(hass: HomeAssistant, mock_device, mock_display, setup_services):
     """Test service call fails when using device_id target."""
-    display = MockDisplay()
-    hass.data[DOMAIN] = {"displays": {mock_device.name: display}}
+    hass.data[DOMAIN] = {"displays": {mock_device.name: mock_display}}
 
     await hass.services.async_call(
             DOMAIN,
@@ -40,14 +34,13 @@ async def test_service_call_with_device_id_target(hass: HomeAssistant, mock_devi
             target={"device_id": mock_device.id}
         )
     
-    display.send.assert_called_once_with("remote_assist_display/navigate", path="/test")
+    mock_display.send.assert_called_once_with("remote_assist_display/navigate", path="/test")
 
 
 
-async def test_service_call_with_correct_target_succeeds(hass: HomeAssistant, mock_device, setup_services):
+async def test_service_call_with_correct_target_succeeds(hass: HomeAssistant, mock_device, mock_display, setup_services):
     """Test service call succeeds with proper target in service data."""
-    display = MockDisplay()
-    hass.data[DOMAIN] = {"displays": {mock_device.name: display}}
+    hass.data[DOMAIN] = {"displays": {mock_device.name: mock_display}}
     
     await hass.services.async_call(
         DOMAIN,
@@ -58,7 +51,7 @@ async def test_service_call_with_correct_target_succeeds(hass: HomeAssistant, mo
         }
     )
     
-    display.send.assert_called_once_with("remote_assist_display/navigate", path="/test")
+    mock_display.send.assert_called_once_with("remote_assist_display/navigate", path="/test")
 
 async def test_service_call_with_invalid_target_fails(hass: HomeAssistant, setup_services):
     """Test service call fails with invalid target."""
@@ -78,10 +71,9 @@ async def test_service_call_with_invalid_target_fails(hass: HomeAssistant, setup
     
     assert response["success"] is False
 
-async def test_url_service_call_with_device_id_target(hass: HomeAssistant, mock_device, setup_services):
+async def test_url_service_call_with_device_id_target(hass: HomeAssistant, mock_device, mock_display, setup_services):
     """Test service call fails when using device_id target."""
-    display = MockDisplay()
-    hass.data[DOMAIN] = {"displays": {mock_device.name: display}}
+    hass.data[DOMAIN] = {"displays": {mock_device.name: mock_display}}
 
     await hass.services.async_call(
             DOMAIN,
@@ -90,12 +82,11 @@ async def test_url_service_call_with_device_id_target(hass: HomeAssistant, mock_
             target={"device_id": mock_device.id}
         )
     
-    display.send.assert_called_once_with("remote_assist_display/navigate_url", url="http://test.com")
+    mock_display.send.assert_called_once_with("remote_assist_display/navigate_url", url="http://test.com")
 
-async def test_url_service_call_with_correct_target_succeeds(hass: HomeAssistant, mock_device, setup_services):
+async def test_url_service_call_with_correct_target_succeeds(hass: HomeAssistant, mock_device, mock_display, setup_services):
     """Test service call succeeds with proper target in service data."""
-    display = MockDisplay()
-    hass.data[DOMAIN] = {"displays": {mock_device.name: display}}
+    hass.data[DOMAIN] = {"displays": {mock_device.name: mock_display}}
     
     await hass.services.async_call(
         DOMAIN,
@@ -106,7 +97,7 @@ async def test_url_service_call_with_correct_target_succeeds(hass: HomeAssistant
         }
     )
     
-    display.send.assert_called_once_with("remote_assist_display/navigate_url", url="http://test.com")
+    mock_display.send.assert_called_once_with("remote_assist_display/navigate_url", url="http://test.com")
 
 async def test_url_service_call_with_invalid_target_fails(hass: HomeAssistant, setup_services):
     """Test service call fails with invalid target."""

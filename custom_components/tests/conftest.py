@@ -4,8 +4,8 @@ from homeassistant.const import CONF_DOMAIN
 from homeassistant.core import HomeAssistant
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
-
-from custom_components.remote_assist_display.const import DOMAIN
+from unittest.mock import Mock
+from custom_components.remote_assist_display.const import DOMAIN, DATA_CONFIG_ENTRY
 
 
 @pytest.fixture(autouse=True)
@@ -33,6 +33,20 @@ async def config_entry(hass):
     entry.add_to_hass(hass)
     return entry
 
+@pytest.fixture
+def mock_coordinator(config_entry, hass):
+    """Create a mock coordinator."""
+    coordinator = Mock()
+    coordinator.hass = hass
+    coordinator.hass.data[DOMAIN][DATA_CONFIG_ENTRY] = config_entry
+    return coordinator
+
+@pytest.fixture
+def mock_display():
+    """Create a mock display."""
+    display = Mock()
+    display.send = Mock()
+    return display
 
 @pytest.fixture
 async def init_integration(hass, config_entry):
