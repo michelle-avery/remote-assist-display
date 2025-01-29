@@ -67,6 +67,7 @@ async def fetch_access_token(app, retries=5, delay=1, window=0, url=None, force=
                     return access_token
                 except Exception as e:
                     app.logger.error(f"Error parsing token: {e}")
+                    app.logger.debug(f"Token: {token}")
 
         await asyncio.sleep(delay)
         app.logger.debug("Sleeping before next attempt...")
