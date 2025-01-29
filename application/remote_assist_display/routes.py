@@ -17,12 +17,16 @@ def register_routes(app):
     async def config():
         saved_config = get_saved_config()
         if "HomeAssistant" in saved_config:
+            current_app.logger.debug("Found existing config file")
             current_app.config["url"] = saved_config.get(
                 "HomeAssistant", "url", fallback=None
             )
+            current_app.logger.debug(f"Found configured URL: {current_app.config['url']}")
             if current_app.config["url"]:
                 # Todo: handle cases where we have a saved url, but no valid credentials
+                current_app.logger.debug("Redirecting to waiting page")
                 return redirect(url_for("waiting"))
+        current_app.logger.debug("No existing config file found, redirecting to login")
         return redirect(url_for("hass_login"))
 
     @app.route("/hass-login", methods=["GET"])
@@ -31,7 +35,7 @@ def register_routes(app):
 
     def save_url(url):
         save_to_config("HomeAssistant", "url", url)
-
+        current_app.logger.debug(f"Saved URL to config file: {url}")
         # Also save the URL on the Server object
         current_app.config["url"] = url
 
@@ -40,6 +44,7 @@ def register_routes(app):
         url = request.form.get("haUrl")
         # Since we won't have settings from the server yet, we can't set the 
         # device name in localStorage.
+        current_app.logger.debug(f"Getting credentials from Home Assistant at {url}")
         await load_dashboard(url, local_storage=False)
         try:
             retries = current_app.config.get(
@@ -53,6 +58,7 @@ def register_routes(app):
             )
             # Save the URL to our config file
             save_url(url)
+            current_app.logger.debug("Redirecting to waiting page")
             await load_dashboard(url_for("waiting"), local_storage=False)
             return "", HTTPStatus.OK
 
