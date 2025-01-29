@@ -48,6 +48,10 @@ def remote_assist_display_config_option_schema(
                     "device_name_storage_key", DEFAULT_DEVICE_NAME_STORAGE_KEY
                 ),
             ): str,
+            vol.Optional(
+                "event_type",
+                default=""
+            ): str,
         }
     )
 
