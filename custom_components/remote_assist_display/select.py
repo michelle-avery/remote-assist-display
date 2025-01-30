@@ -77,4 +77,14 @@ class RADAssistSatelliteSelect(RADEntity, SelectEntity, restore_state.RestoreEnt
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
         self._attr_current_option = option
-        await self.async_update_ha_state()
+        await self.async_write_ha_state()
+
+    @property
+    def satellite_id(self):
+        """Return the device id matching the assigned assist satellite."""
+        entity_id = self._attr_current_option
+        entity_registery = er.async_get(self.hass)
+        assist_entity = entity_registery.entities.get(entity_id)
+        if assist_entity:
+            return assist_entity.device_id
+        return None
