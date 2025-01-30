@@ -1,5 +1,5 @@
 """Test the Remote Assist Display select platform."""
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from homeassistant.helpers import entity_registry as er
@@ -89,8 +89,8 @@ async def test_satellite_select_state_restoration(hass, rad_satellite_select):
 
 async def test_satellite_select_option(rad_satellite_select):
     """Test selecting an option."""
-    with patch.object(rad_satellite_select, 'async_update_ha_state') as mock_update:
+    with patch.object(rad_satellite_select, 'async_write_ha_state', new_callable=AsyncMock) as mock_update:
         await rad_satellite_select.async_select_option("assist_satellite.kitchen")
         
         assert rad_satellite_select._attr_current_option == "assist_satellite.kitchen"
-        mock_update.assert_called
+        mock_update.assert_called_once()
