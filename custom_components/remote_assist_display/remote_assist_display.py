@@ -3,12 +3,13 @@
 import logging
 
 from homeassistant.components.websocket_api import event_message
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant, Event, callback
 from homeassistant.helpers import device_registry, entity_registry
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from .const import DATA_ADDERS, DATA_DISPLAYS, DOMAIN
-from .sensor import RADSensor
+from .const import DATA_ADDERS, DATA_DISPLAYS, DOMAIN, DATA_CONFIG_ENTRY
+from .select import RADAssistSatelliteSelect
+from .sensor import RADSensor, RADIntentSensor
 from .text import DefaultDashboardText, DeviceStorageKeyText
 
 _LOGGER = logging.getLogger(__name__)
@@ -38,8 +39,44 @@ class RemoteAssistDisplay:
         self.data = {}
         self.settings = {}
         self._connections = []
+        self._event_type = hass.data[DOMAIN][DATA_CONFIG_ENTRY].options.get(
+            "event_type", None
+        )
+        self._event_listener = None
+
+        if self._event_type:
+            self._set_event_listener()
 
         self.update_entities(hass)
+
+    def _set_event_listener(self):
+        """Set the event listener for the Remote Assist Display device."""
+
+        @callback
+        def handle_event(event: Event):
+            """Handle the event."""
+            if "intent_sensor" not in self.entities:
+                return
+
+            event_data = event.data
+
+            # Update the intent sensor for this device if the event came from its corresponding assist satellite
+            if (
+                event_data.get("device_id")
+                == self.entities.get("assist_satellite").satellite_id
+            ):
+                self.entities.get("intent_sensor").update_from_event(
+                    event_data["result"]
+                )
+
+        # Remove any existing event listener
+        if self._event_listener:
+            self._event_listener()
+
+        # Set a new event listener
+        self._event_listener = self.coordinator.hass.bus.async_listen(  # Changed from coordinator.hass to self.hass
+            self._event_type, handle_event
+        )
 
     def update(self, hass, new_data):
         """Update the Remote Assist Display device."""
@@ -78,12 +115,30 @@ class RemoteAssistDisplay:
             new = DefaultDashboardText(coordinator, display_id, self)
             adder([new])
             self.entities["default_dashboard"] = new
-        
+
         if "device_storage_key" not in self.entities:
             adder = hass.data[DOMAIN][DATA_ADDERS]["text"]
             new = DeviceStorageKeyText(coordinator, display_id, self)
             adder([new])
             self.entities["device_storage_key"] = new
+
+        if "assist_satellite" not in self.entities:
+            adder = hass.data[DOMAIN][DATA_ADDERS]["select"]
+            new = RADAssistSatelliteSelect(coordinator, display_id, self)
+            adder([new])
+            self.entities["assist_satellite"] = new
+
+        if "intent_sensor" not in self.entities:
+            adder = hass.data[DOMAIN][DATA_ADDERS]["sensor"]
+            new = RADIntentSensor(
+                coordinator,
+                display_id,
+                "intent_sensor",
+                "Intent Sensor",
+                icon="mdi:message-processing",
+            )
+            adder([new])
+            self.entities["intent_sensor"] = new
 
         hass.create_task(
             self.send(

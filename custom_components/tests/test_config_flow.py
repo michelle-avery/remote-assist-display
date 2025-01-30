@@ -64,6 +64,18 @@ async def test_options_flow_set_device_name_storage_key(hass: HomeAssistant, con
     assert result2["type"] == "create_entry"
     assert result2["data"]["device_name_storage_key"] == "different-storage-key"
 
+async def test_options_flow_set_event_type(hass: HomeAssistant, config_entry: MockConfigEntry) -> None:
+    """Test setting event type in options flow."""
+    result = await hass.config_entries.options.async_init(config_entry.entry_id)
+    
+    # Set an event type
+    result2 = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={"event_type": "event-type"}
+    )
+    assert result2["type"] == "create_entry"
+    assert result2["data"]["event_type"] == "event-type"
+
 async def test_options_flow_update_path(hass: HomeAssistant, config_entry: MockConfigEntry) -> None:
     """Test updating existing dashboard path."""
     # First set initial options
@@ -98,6 +110,23 @@ async def test_options_flow_update_device_name_storage_key(hass: HomeAssistant, 
     assert result2["type"] == "create_entry"
     assert result2["data"]["device_name_storage_key"] == "new-storage-key"
 
+async def  test_options_flow_update_event_type(hass: HomeAssistant, config_entry: MockConfigEntry) -> None:
+    """Test updating existing event type."""
+    # First set initial options
+    hass.config_entries.async_update_entry(
+        entry=config_entry,
+        options={"event_type": ""}
+    )
+    
+    # Update to new event type
+    result = await hass.config_entries.options.async_init(config_entry.entry_id)
+    result2 = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={"event_type": "new-event-type"}
+    )
+    assert result2["type"] == "create_entry"
+    assert result2["data"]["event_type"] == "new-event-type"
+
 async def test_options_flow_dashboard_empty_string(hass: HomeAssistant, config_entry: MockConfigEntry) -> None:
     """Test removing dashboard path."""
     # First set initial options
@@ -127,7 +156,19 @@ async def test_options_flow_device_name_storage_key_empty_string(hass: HomeAssis
     )
     assert result2["type"] == "create_entry"
     assert result2["data"]["device_name_storage_key"] == DEFAULT_DEVICE_NAME_STORAGE_KEY
+
+async def test_options_flow_event_type_none_input(hass: HomeAssistant, config_entry: MockConfigEntry) -> None:
+    """Test options flow with None input."""
+    result = await hass.config_entries.options.async_init(config_entry.entry_id)
     
+    # Test form shows with None input
+    result2 = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={"event_type": ""}
+    )
+    assert result2["type"] == "create_entry"
+    assert result2["data"]["event_type"] == ""
+
 async def test_options_flow_none_input(hass: HomeAssistant, config_entry: MockConfigEntry) -> None:
     """Test options flow with None input."""
     result = await hass.config_entries.options.async_init(config_entry.entry_id)

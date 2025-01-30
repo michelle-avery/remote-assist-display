@@ -6,7 +6,7 @@ from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -74,3 +74,50 @@ class RADSensor(RADEntity, SensorEntity):
     def extra_state_attributes(self):
         """Return the state attributes."""
         return super().extra_state_attributes
+
+
+class RADIntentSensor(RADSensor):
+    def __init__(
+        self,
+        coordinator,
+        display_id,
+        parameter,
+        name,
+        unit_of_measurement=None,
+        device_class=None,
+        icon=None,
+    ):
+        """Initialize the sensor."""
+        super().__init__(
+            coordinator,
+            display_id,
+            parameter,
+            name,
+            unit_of_measurement,
+            device_class,
+            icon,
+        )
+
+    @callback
+    def update_from_event(self, result: dict[str, Any]) -> None:
+        """Update the sensor from an event data."""
+        self._attr_extra_state_attributes = {"intent_output": result}
+        if "speech" in result["response"] and "plain" in result["response"]["speech"]:
+            self._attr_native_value = result["response"]["speech"]["plain"].get(
+                "speech", ""
+            )
+            self.async_write_ha_state()
+
+    @property
+    def native_value(self):
+        """Return the state of the sensor normall, as opposed to the normal RADSensor."""
+        return self._attr_native_value
+
+    @property
+    def extra_state_attributes(self):
+        """Return the state attributes from this sensor in addition to the ones from its RADSensor parent."""
+        super_attributes = super().extra_state_attributes
+        intent_sensor_attributes = {}
+        if hasattr(self, "_attr_extra_state_attributes"):
+            intent_sensor_attributes = self._attr_extra_state_attributes
+        return {**super_attributes, **intent_sensor_attributes}

@@ -7,23 +7,6 @@ from custom_components.remote_assist_display.const import DOMAIN, DEFAULT_HOME_A
 from custom_components.remote_assist_display.text import DefaultDashboardText, DeviceStorageKeyText
 
 
-@pytest.fixture
-def mock_coordinator(config_entry, hass):
-    """Create a mock coordinator."""
-    coordinator = Mock()
-    coordinator.hass = hass
-    coordinator.hass.data[DOMAIN][DATA_CONFIG_ENTRY] = config_entry
-    return coordinator
-
-
-@pytest.fixture
-def mock_display():
-    """Create a mock display."""
-    display = Mock()
-    display.send = Mock()
-    return display
-
-
 async def test_dashboard_text_initialization(mock_coordinator, mock_display):
     """Test DefaultDashboardText initialization."""
     entity = DefaultDashboardText(
