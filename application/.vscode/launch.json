@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Main Application",
+            "name": "Python: RAD",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
@@ -13,6 +13,21 @@
                 "FLASK_DEBUG": "true",
                 "FULLSCREEN": "false",
                 "LOG_LEVEL": "DEBUG"
+            }
+        },
+        {
+            "name": "Python: RAD With Webview Debug",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "FLASK_DEBUG": "true",
+                "FULLSCREEN": "false",
+                "LOG_LEVEL": "DEBUG",
+                "WEBVIEW_DEBUG": "true"
             }
         },
         {
