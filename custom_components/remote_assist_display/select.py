@@ -32,7 +32,7 @@ async def async_setup_entry(
 
 
 class RADAssistSatelliteSelect(RADEntity, SelectEntity, restore_state.RestoreEntity):
-    """Select Entity representing the assositated assist satellite."""
+    """Select Entity representing the associated assist satellite."""
 
     def __init__(
         self,
@@ -84,8 +84,8 @@ class RADAssistSatelliteSelect(RADEntity, SelectEntity, restore_state.RestoreEnt
         """Return the device id matching the assigned assist satellite."""
         if hasattr(self, "_attr_current_option"):
             entity_id = self._attr_current_option
-            entity_registery = er.async_get(self.hass)
-            assist_entity = entity_registery.entities.get(entity_id)
+            entity_registry = er.async_get(self.hass)
+            assist_entity = entity_registry.entities.get(entity_id)
             if assist_entity:
                 return assist_entity.device_id
             return None
