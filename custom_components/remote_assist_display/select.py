@@ -82,9 +82,11 @@ class RADAssistSatelliteSelect(RADEntity, SelectEntity, restore_state.RestoreEnt
     @property
     def satellite_id(self):
         """Return the device id matching the assigned assist satellite."""
-        entity_id = self._attr_current_option
-        entity_registery = er.async_get(self.hass)
-        assist_entity = entity_registery.entities.get(entity_id)
-        if assist_entity:
-            return assist_entity.device_id
+        if hasattr(self, "_attr_current_option"):
+            entity_id = self._attr_current_option
+            entity_registery = er.async_get(self.hass)
+            assist_entity = entity_registery.entities.get(entity_id)
+            if assist_entity:
+                return assist_entity.device_id
+            return None
         return None
