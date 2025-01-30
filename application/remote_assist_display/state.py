@@ -32,8 +32,7 @@ class DisplayState:
             command_type = "remote_assist_display/update"
             message = {"type": command_type, "display_id": display_id, "data": data}
 
-            response = await self.websocket_manager.client.send_command(message)
-            logger.debug(f"Update current URL response: {response}")
+            await self.websocket_manager.client.send_command(message)
 
     async def load_url(self, url, local_storage=True):
         """Load a URL in the webview and update server."""
