@@ -106,6 +106,21 @@ The integration provides two services:
 and a path (relative to your home assistant base URL).
 * `remote_assist_display.navigate_url` is different in that it can accept any URL, not just a home assistant one.
 
+The integration has the ability to listen to the event bus for messages containing conversation
+responses from a specific device (ie, the assist satellite to which your Remote Assist Display 
+is paired) and update an automatically-create sensor with the result of the conversation. This
+does require the usage of a conversation component that emits assist pipeline events to the 
+service bus, which Home Assistant does not natively do. 
+[This](https://github.com/michelle-avery/custom-conversation) conversation component can be 
+used either as-is, or as an example for modifying a conversation component of your own. If 
+[this](https://github.com/home-assistant/core/pull/136083) PR gets merged, this project will be 
+updated to work with that by default.
+
+To configure this, go to the Remote Assist Display integration's Configuration page and set the 
+event_type you want your devices to listen to (for the custom conversation integration, this will 
+be custom_conversation_conversation_ended). On each Remote Assist Display Device's device page
+select the corresponding Assist Satellite in the dropdown. 
+
 ## Known Issues
 This project is still in an early prototype stage. In addition to the usual implications (rapidly chanaging code base, 
 little error handling, etc.), there are a few known issues:
