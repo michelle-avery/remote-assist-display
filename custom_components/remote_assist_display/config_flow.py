@@ -50,7 +50,7 @@ def remote_assist_display_config_option_schema(
             ): str,
             vol.Optional(
                 "event_type",
-                default=""
+                default=options.get("event_type", ""),
             ): str,
         }
     )
