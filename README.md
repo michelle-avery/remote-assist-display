@@ -101,11 +101,14 @@ Dashboard". Type in the name of the default dashboard for that device. It will b
 as soon as that text box loses focus (so click somewhere else on the page, hit tab, etc.).
 
 ## Usage
+
+### Services
 The integration provides two services:
 * `remote_assist_display.navigate` is meant to be a browser-mod-compatible service. It takes a target (the device),
 and a path (relative to your home assistant base URL).
 * `remote_assist_display.navigate_url` is different in that it can accept any URL, not just a home assistant one.
 
+### Event Bus Integration
 The integration has the ability to listen to the event bus for messages containing conversation
 responses from a specific device (ie, the assist satellite to which your Remote Assist Display 
 is paired) and update an automatically-create sensor with the result of the conversation. This
@@ -121,12 +124,54 @@ event_type you want your devices to listen to (for the custom conversation integ
 be custom_conversation_conversation_ended). On each Remote Assist Display Device's device page
 select the corresponding Assist Satellite in the dropdown. 
 
+### Environment Variable Configuration (Linux Only)
+
+Linux installs  support some customization via environment variables. The following are available:
+
+
+| Variable Name | Description | Default |
+| ------------- | ------------- | -------------
+| `LOG_LEVEL` | The level of application logging (e.g., DEBUG, INFO, WARNING, ERROR). | INFO, except on Android, which currently defaults to DEBUG.
+| `FLASK_DEBUG` | Turns on Flask debugging in the webview. | False
+| `FULLSCREEN` | Launches the webview window in fullscreen. | True
+| `WEBVIEW_DEBUG` | Launches a devtools window for debugging purposes. | False
+| `TOKEN_RETRY_LIMIT` | The number of times the application will attempt to fetch a valid token from the frontend before giving up. | 10
+| `MAC_ADDRESS` | The mac address of the system. Used to determine the unique id if one is not set. | The mac address detected by the application. Note that if MAC address randomization is being used on the system, this will result in a different mac address being detected every time the system is rebooted.
+| `HOSTNAME` | The hostname of the  system. Used by default in the unique id | The actual hostname detected by the application. 
+| `UNIQUE_ID` | The unique id used to identify this device in Home Assistant. This is also the value set in the browser's localStorage in order for dashboards to detect which device they are being displayed on. | remote-assist-display-MAC_ADDRESS-HOSTNAME
+| `LOG_DIR` | The directory where logs are stored. | On source-based installs, this is the "application" directory. On pyinstaller-based installs, this will be the same directory as the executable. On Android, it's the appdata folder for the application.
+| `CONFIG_DIR` | The directory where the configuration file is stored | The same as above.
+
+### Using with ViewAssist
+* Set up Remote Assist Display on your device, per the installation directions. You need to do 
+this and connect it to your Home Assistant instance in order to create the entities you'll need 
+for the rest of these directions.
+* In your Home Assistant `configuration.yaml` file, create a ViewAssist template sensor (or 
+modify an existing one) according the the ViewAssist directions, and use the following values:
+  - `mic_device` - if you're using this with an Assist Satellite (ie, Wyoming, or an ESP-based 
+  voice satellite) should be your `assist_satellite` entity.
+  - `display_device` - Set this to the `current_url` sensor entity of your Remote Assist Display.
+  - `browser_id` - This is the unique id of the  device. Unless you've set something different, 
+  it will be in the format of `remote-assist-display-<mac address with no separators>-<hostname>
+* Currently, ViewAssist calls the `browser_mod.navigate` service to navigate from one dashboard 
+to another. You need to change this to use the `remote_assist_display.navigate` service instead. 
+You can do this either by creating a copy of the ViewAssist Device Control Blueprint with that 
+value changed or taking control of the automation created by the blueprint (keep in mine this 
+won't let you easily update later) and changing specifically for a device's automation. The RAD 
+service maintains the same API as the browser_mod one, so you don't need to change anything else, 
+just the service name. You may also need to change it in other blueprints that you have installed.
+* If you're using a wyoming satellite, you have two options for configuring the intent sensor:
+  - You can run the Wyoming Intent Update from [here](https://github.com/michelle-avery/
+  wyoming-intent-updater). This should work regardless of which conversation component you use, 
+  but it will not give you the ability to use the "intent" dashboard (that's the one that, when 
+  you tell it to turn on a light, shows the light on the dashboard so that you can turn it off, 
+  adjust the brightness, etc.).
+  - Use [this](https://github.com/michelle-avery/custom-conversation) custom conversation agent, 
+  or another that publishes handled intents to the event bus, and follow the directions above 
+  under "Event Bus Integration". If you use this option, your Intent Sensor will be the Intent 
+  Sensor for your RAD device. 
+
 ## Known Issues
-This project is still in an early prototype stage. In addition to the usual implications (rapidly chanaging code base, 
-little error handling, etc.), there are a few known issues:
-* If you mistype the URL of your home assistant instance, you'll be redirected to an error page with no way to go back.
-The application will need to be quit and restarted.
-* There's currently no heartbeat to maintain the connection to Home Assistant or detect drops, so if the connection is
-lost (ie, if the server is restarted), the application will need to be restarted as well.
-* On some systems, when running the standalone exectuable, on-screen keyboards may not auto-open and may need to be
-expanded manually to provide input.
+This project is still in an early prototype stage. In addition to the usual implications (rapidly 
+changing code base, little error handling, etc.), there are some known 
+[issues](https://github.com/michelle-avery/remote-assist-display/issues).
