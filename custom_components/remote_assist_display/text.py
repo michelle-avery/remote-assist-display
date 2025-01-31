@@ -64,6 +64,10 @@ class DefaultDashboardText(RADEntity, RestoreText):
                 val = self.coordinator.hass.data[DOMAIN][DATA_CONFIG_ENTRY].options.get(
                     "default_dashboard_path", DEFAULT_HOME_ASSISTANT_DASHBOARD
                 )
+            if not val:
+                val = self.coordinator.hass.data[DOMAIN][DATA_CONFIG_ENTRY].options.get(
+                    "default_dashboard_path", DEFAULT_HOME_ASSISTANT_DASHBOARD
+                )
         if len(str(val)) > 255:
             val = str(val)[:250] + "..."
         return val
