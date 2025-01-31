@@ -11,10 +11,6 @@ flask = {extras = ["async"], version = "*"}
 hass-client = "*"
 environs = "*"
 requests = "*"
-pytest = "*"
-pytest-flask = "*"
-pytest-cov = "*"
-pytest-asyncio = "*"
 cython = "*"
 certifi = "*"
 
@@ -22,6 +18,10 @@ certifi = "*"
 pyinstaller = "*"
 buildozer = "*"
 pytest-timeout = "*"
+pytest = "*"
+pytest-flask = "*"
+pytest-cov = "*"
+pytest-asyncio = "*"
 
 [requires]
 python_version = "3.12"
