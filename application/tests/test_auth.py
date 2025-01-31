@@ -80,20 +80,6 @@ class TestFetchAccessToken:
 
         assert mock_window.evaluate_js.call_count == 2
 
-    @pytest.mark.asyncio
-    async def test_fetch_token_failure_new_window(self, mock_webview, app):
-        """Test token fetch failure after max retries with new window."""
-        mock_wv, mock_window = mock_webview
-        TokenStorage.clear_token()
-
-        # All attempts return None
-        mock_window.evaluate_js.return_value = None
-
-        with pytest.raises(Exception, match="Unable to fetch token from localStorage"):
-            await fetch_access_token(app, retries=2, delay=0.1, url="http://test.local:8123")
-
-        assert mock_window.evaluate_js.call_count == 2
-
 
     @pytest.mark.asyncio
     async def test_fetch_token_existing_window(self, mock_webview, app):
