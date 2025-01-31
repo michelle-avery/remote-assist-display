@@ -43,7 +43,15 @@ def create_app():
     app.logger.addHandler(console_handler)
     
     app.logger.handlers = [file_handler, console_handler]
-    app.logger.info(f"Starting Remote Assist Display version {app.config['VERSION']}, logging to {logs_dir}")
+    app.logger.info("=" * 80)
+    app.logger.info(f"Remote Assist Display v{app.config['VERSION']}")
+    app.logger.info("-" * 80)
+    app.logger.info(f"Unique ID: {app.config['UNIQUE_ID']}")
+    app.logger.info(f"Running on Android: {app.config['IS_ANDROID']}")
+    app.logger.info(f"Frozen executable: {app.config['IS_FROZEN']}")
+    app.logger.info(f"Log dir.: {logs_dir}")
+    app.logger.info(f"Config dir.: {app.config['CONFIG_DIR']}")
+    app.logger.info("=" * 80)
     gui_dir = os.path.join(os.path.dirname(__file__), "templates")  # development path
     if not os.path.exists(gui_dir):  # frozen executable path
         gui_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
