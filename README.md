@@ -57,12 +57,12 @@ but removes the need for the user to interact with the display prior to use afte
 an [issue](https://github.com/michelle-avery/remote-assist-display/issues)
   * For debian-based systems:
   `sudo apt-get install pkg-config cmake libcairo2-dev libgirepository1.0-dev 
-  python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-webkit2-4.1`
+  python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-webkit2-4.1 python3-dev`
   * For Alpine-based systems (including Postmarketos):
-  `sudo apk add g++ cmake pkgconf py3-cairo-dev gobject-introspection-dev`
+  `sudo apk add g++ cmake pkgconf py3-cairo-dev gobject-introspection-dev python3-dev`
   * For all systems:
     * A Python 3.12+ environment
-    * [Pipenv](https://pipenv.pypa.io/en/latest/installation.html)
+    * [Pipenv](https://pipenv.pypa.io/en/latest/installation.html) (on many systems, this can easily be installed by installing pipx from your package manager, and then running `pipx install pipenv`)
 * Run `pipenv install` to install the required Python packages
 * Run the application with `pipenv run python main.py`. If you just see a white screen when the application launches
   (this will be the  case with  ThinkSmart View devices, and potentially others as well), preface the command with 
