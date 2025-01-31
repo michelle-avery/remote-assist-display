@@ -41,7 +41,7 @@ def get_local_dir(is_android: bool, is_frozen: bool) -> str:
     elif is_frozen:
         return str(os.path.dirname(os.path.abspath(sys.executable)))
     else:
-        return str(os.path.dirname(__file__))
+        return str(os.path.dirname(os.path.dirname(__file__)))
     
 class Config(object):
     env = Env()
