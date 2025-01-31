@@ -18,8 +18,8 @@ def create_app():
     if app.config['IS_ANDROID']:
         app.config['LOG_LEVEL'] = 'DEBUG'
     log_level = getattr(logging, app.config['LOG_LEVEL'])
-    
-    logs_dir = os.path.join(os.path.dirname(__file__), '..', 'logs')
+
+    logs_dir = app.config['LOG_DIR']
     os.makedirs(logs_dir, exist_ok=True)
     
     file_handler = RotatingFileHandler(
@@ -43,7 +43,7 @@ def create_app():
     app.logger.addHandler(console_handler)
     
     app.logger.handlers = [file_handler, console_handler]
-    app.logger.info(f"Starting Remote Assist Display version {app.config['VERSION']}")
+    app.logger.info(f"Starting Remote Assist Display version {app.config['VERSION']}, logging to {logs_dir}")
     gui_dir = os.path.join(os.path.dirname(__file__), "templates")  # development path
     if not os.path.exists(gui_dir):  # frozen executable path
         gui_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
