@@ -173,5 +173,5 @@ just the service name. You may also need to change it in other blueprints that y
 
 ## Known Issues
 This project is still in an early prototype stage. In addition to the usual implications (rapidly 
-chanaging code base, little error handling, etc.), there are some known 
+changing code base, little error handling, etc.), there are some known 
 [issues](https://github.com/michelle-avery/remote-assist-display/issues).
