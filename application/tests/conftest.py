@@ -16,6 +16,8 @@ def app():
     app.config["MAC_ADDRESS"] = "112233445566"
     app.config["HOSTNAME"] = "test-hostname"
     app.config["UNIQUE_ID"] = "remote-assist-display-112233445566-test-hostname"
+    app.config["LOG_DIR"] = "/tmp"
+    app.config["CONFIG_DIR"] = "/tmp"
 
     return app
 

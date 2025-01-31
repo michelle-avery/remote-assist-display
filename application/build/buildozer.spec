@@ -37,7 +37,7 @@ version = 0.1.0
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,certifi,kivy,pywebview,flask[async]==2.3.3,asgiref>=3.2,werkzeug==2.3.7,websockets,environs,requests,pillow,markupsafe==2.1.1,jinja2,itsdangerous,click,blinker,marshmallow,packaging,python-dotenv,proxy-tools,bottle,typing-extensions
+requirements = android,python3,certifi,kivy,pywebview,flask[async]==2.3.3,asgiref>=3.2,werkzeug==2.3.7,websockets,environs,requests,pillow,markupsafe==2.1.1,jinja2,itsdangerous,click,blinker,marshmallow,packaging,python-dotenv,proxy-tools,bottle,typing-extensions
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes

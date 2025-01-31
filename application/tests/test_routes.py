@@ -50,7 +50,7 @@ async def test_connect(
     mock_fetch_access_token.assert_called_once_with(
         app=app, url=test_url, retries=app.config["TOKEN_RETRY_LIMIT"], delay=10
     )
-    mock_save_to_config.assert_called_once_with("HomeAssistant", "url", test_url)
+    mock_save_to_config.assert_called_once_with("HomeAssistant", "url", test_url, "/tmp")
     assert mock_load_dashboard.call_count == 2
 
 

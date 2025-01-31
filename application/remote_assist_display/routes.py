@@ -15,7 +15,7 @@ CONFIG_FILE = "config.ini"
 def register_routes(app):
     @app.route("/", methods=["GET"])
     async def config():
-        saved_config = get_saved_config()
+        saved_config = get_saved_config(current_app.config["CONFIG_DIR"])
         if "HomeAssistant" in saved_config:
             current_app.logger.debug("Found existing config file")
             current_app.config["url"] = saved_config.get(
@@ -34,7 +34,7 @@ def register_routes(app):
         return render_template("login.html")
 
     def save_url(url):
-        save_to_config("HomeAssistant", "url", url)
+        save_to_config("HomeAssistant", "url", url, current_app.config["CONFIG_DIR"])
         current_app.logger.debug(f"Saved URL to config file: {url}")
         # Also save the URL on the Server object
         current_app.config["url"] = url
