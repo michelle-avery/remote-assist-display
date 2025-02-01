@@ -1,12 +1,26 @@
 import logging
 import os
+import re
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask
 
 from .flask_config import Config
 
-
+class TokenMaskingFilter(logging.Filter):
+    # Pattern matches "access_token": "..." or "refresh_token": "..." 
+    TOKEN_PATTERN = r'["\']?(access_token|refresh_token)["\']?\s*:\s*["\']([^"\']*)["\']\s*'
+    
+    def filter(self, record):
+        if isinstance(record.msg, str):
+            # Replace tokens with a placeholder
+            record.msg = re.sub(
+                self.TOKEN_PATTERN,
+                r'"\1": "[REDACTED]"',
+                record.msg
+            )
+        return True
+    
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -31,12 +45,14 @@ def create_app():
         '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
     ))
     file_handler.setLevel(log_level)
+    file_handler.addFilter(TokenMaskingFilter()) 
 
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(logging.Formatter(
         '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
     ))
     console_handler.setLevel(log_level)
+    console_handler.addFilter(TokenMaskingFilter())
 
     app.logger.setLevel(log_level)
     app.logger.addHandler(file_handler)
