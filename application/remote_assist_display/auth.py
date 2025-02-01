@@ -143,13 +143,34 @@ async def fetch_access_token(app, retries: int = 5, delay: int = 1, window: int 
         
         if token and token != "No token found" and not token.startswith("Error:"):
             try:
-                access_token = json.loads(token)["access_token"]
+                # The response seems to sometimes be json, and sometimes double-quoted json, so we'll try both
+                try:
+                    parsed_token = json.loads(token)
+                except json.JSONDecodeError:
+                    # Check if it's double-quoted
+                    if isinstance(token, str) and token.startswith('"') and token.endswith('"'):
+                        # remove the outer quotes and try again
+                        token = token[1:-1]
+                        token = token.replace('\\"', '"')
+                        parsed_token = json.loads(token)
+                    else:
+                        raise
+                if not isinstance(parsed_token, dict):
+                    raise ValueError(f"Parsed token is not a dictionary: {type(parsed_token)}")
+                
+                if "access_token" not in parsed_token:
+                    raise ValueError("No access_token found in parsed token")
+                
+                access_token = parsed_token["access_token"]
+                if not isinstance(access_token, str):
+                    raise ValueError(f"access_token is not a string: {type(access_token)}")
                 TokenStorage.set_token(access_token)
                 app.logger.debug("Successfully got and parsed access token")
                 return access_token
             except Exception as e:
-                app.logger.error(f"Error parsing token: {e}")
+                app.logger.error(f"Error parsing token: {str(e)}")
                 app.logger.debug(f"Token: {token}")
+                app.logger.debug(f"Token type: {type(token)}")
 
         await asyncio.sleep(delay)
         app.logger.debug("Sleeping before next attempt...")

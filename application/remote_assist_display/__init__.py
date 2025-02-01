@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import re
@@ -8,17 +9,12 @@ from flask import Flask
 from .flask_config import Config
 
 class TokenMaskingFilter(logging.Filter):
-    # Pattern matches "access_token": "..." or "refresh_token": "..." 
-    TOKEN_PATTERN = r'["\']?(access_token|refresh_token)["\']?\s*:\s*["\']([^"\']*)["\']\s*'
+    # Match any JWT token format (three base64url-encoded sections separated by dots)
+    JWT_PATTERN = r'([a-zA-Z0-9_-]+\.){2}[a-zA-Z0-9_-]+'
     
     def filter(self, record):
         if isinstance(record.msg, str):
-            # Replace tokens with a placeholder
-            record.msg = re.sub(
-                self.TOKEN_PATTERN,
-                r'"\1": "[REDACTED]"',
-                record.msg
-            )
+            record.msg = re.sub(self.JWT_PATTERN, '[REDACTED]', record.msg)
         return True
     
 def create_app():
