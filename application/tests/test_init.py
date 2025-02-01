@@ -15,7 +15,7 @@ def test_token_masking_filter():
         },
         # Multiple tokens
         {
-            "input": '{"access_token": "ey2hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c", "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5ODc2NTQzMjEwIiwibmFtZSI6IkphbmUgRG9lIn0.yRQYnWzskCZUxPwaQupWkiUzKELZ49eM7oWxAQK_ZXw"}',
+            "input": '{"access_token": "ey2hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c", "refresh_token": "479749b59172eca9ad0033229535351fc3188bd99f6f102b09e87a8f4aecf28181f9a6f041538bea1dd431debf355005ee7bf4457b97c4f0e70a8aecb95a1475"}',
             "expected": '{"access_token": "[REDACTED]", "refresh_token": "[REDACTED]"}'
         },
         # Single quotes
@@ -25,7 +25,7 @@ def test_token_masking_filter():
         },
         # Mixed quotes
         {
-            "input": "{'access_token': 'ey4hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5ODc2NTQzMjEwIiwibmFtZSI6IkphbmUgRG9lIn0.yRQYnWzskCZUxPwaQupWkiUzKELZ49eM7oWxAQK_ZXw\"}",
+            "input": "{'access_token': 'ey4hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', \"refresh_token\": \"479749b59172eca9ad0033229535351fc3188bd99f6f102b09e87a8f4aecf28181f9a6f041538bea1dd431debf355005ee7bf4457b97c4f0e70a8aecb95a1475\"}",
             "expected": "{'access_token': '[REDACTED]', \"refresh_token\": \"[REDACTED]\"}"
         },
         # Make sure non-token messages pass through unchanged
@@ -39,12 +39,17 @@ def test_token_masking_filter():
             "expected": '[2025-02-01 15:04:36,173] DEBUG in auth: Token: "{\\"access_token\\":\\"[REDACTED]\\"}"'
         },
         {
-            "input": 'Token response: "{\\"access_token\\":\\"ey6hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c\\", \\"refresh_token\\":\\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5ODc2NTQzMjEwIiwibmFtZSI6IkphbmUgRG9lIn0.yRQYnWzskCZUxPwaQupWkiUzKELZ49eM7oWxAQK_ZXw\\"}"',
+            "input": 'Token response: "{\\"access_token\\":\\"ey6hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c\\", \\"refresh_token\\":\\"479749b59172eca9ad0033229535351fc3188bd99f6f102b09e87a8f4aecf28181f9a6f041538bea1dd431debf355005ee7bf4457b97c4f0e70a8aecb95a1475\\"}"',
             "expected": 'Token response: "{\\"access_token\\":\\"[REDACTED]\\", \\"refresh_token\\":\\"[REDACTED]\\"}"'
         },
         {
             "input": 'Mixed content with token "{\\"access_token\\":\\"ey7hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c\\"}" in the middle',
             "expected": 'Mixed content with token "{\\"access_token\\":\\"[REDACTED]\\"}" in the middle'
+        },
+         # Make sure we don't over-redact hex strings that aren't the right length
+        {
+            "input": '{"some_hex": "a1b2c3d4", "refresh_token": "479749b59172eca9ad0033229535351fc3188bd99f6f102b09e87a8f4aecf28181f9a6f041538bea1dd431debf355005ee7bf4457b97c4f0e70a8aecb95a1475"}',
+            "expected": '{"some_hex": "a1b2c3d4", "refresh_token": "[REDACTED]"}'
         }
     ]
 
@@ -63,7 +68,7 @@ def test_app_logger_filtering(app):
         
         # Test actual filtering through the handler
         with app.app_context():
-            test_message = '{"access_token": "ey7hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c", "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5ODc2NTQzMjEwIiwibmFtZSI6IkphbmUgRG9lIn0.yRQYnWzskCZUxPwaQupWkiUzKELZ49eM7oWxAQK_ZXw"}'
+            test_message = '{"access_token": "ey7hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c", "refresh_token": "479749b59172eca9ad0033229535351fc3188bd99f6f102b09e87a8f4aecf28181f9a6f041538bea1dd431debf355005ee7bf4457b97c4f0e70a8aecb95a1475"}'
             # Create a new record (this is how logging internally works)
             record = logging.LogRecord(
                 name="test",
@@ -82,7 +87,7 @@ def test_app_logger_filtering(app):
             assert '"access_token": "[REDACTED]"' in record.msg
             assert '"refresh_token": "[REDACTED]"' in record.msg
             assert "ey" not in record.msg
-            assert "ey" not in record.msg
+            assert "4797" not in record.msg
 
 def test_real_logging(app):
     """Test that actual logging calls get filtered"""
@@ -90,7 +95,7 @@ def test_real_logging(app):
         # Test a variety of log messages
         test_messages = [
             ('{"access_token": "ey7hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"}', '[REDACTED]'),
-            ('{"refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5ODc2NTQzMjEwIiwibmFtZSI6IkphbmUgRG9lIn0.yRQYnWzskCZUxPwaQupWkiUzKELZ49eM7oWxAQK_ZXw"}', '[REDACTED]'),
+            ('{"refresh_token": "479749b59172eca9ad0033229535351fc3188bd99f6f102b09e87a8f4aecf28181f9a6f041538bea1dd431debf355005ee7bf4457b97c4f0e70a8aecb95a1475"}', '[REDACTED]'),
             ('Normal message', 'Normal message'),  # Should pass through unchanged
             ('Mixed message with {"access_token": "ey7hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"}', '[REDACTED]')
         ]

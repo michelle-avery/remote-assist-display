@@ -11,10 +11,12 @@ from .flask_config import Config
 class TokenMaskingFilter(logging.Filter):
     # Match any JWT token format (three base64url-encoded sections separated by dots)
     JWT_PATTERN = r'([a-zA-Z0-9_-]+\.){2}[a-zA-Z0-9_-]+'
-    
+    REFRESH_PATTERN = r'[a-f0-9]{128}'
+
     def filter(self, record):
         if isinstance(record.msg, str):
             record.msg = re.sub(self.JWT_PATTERN, '[REDACTED]', record.msg)
+            record.msg = re.sub(self.REFRESH_PATTERN, '[REDACTED]', record.msg)
         return True
     
 def create_app():

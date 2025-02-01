@@ -144,17 +144,13 @@ async def fetch_access_token(app, retries: int = 5, delay: int = 1, window: int 
         if token and token != "No token found" and not token.startswith("Error:"):
             try:
                 # The response seems to sometimes be json, and sometimes double-quoted json, so we'll try both
-                try:
-                    parsed_token = json.loads(token)
-                except json.JSONDecodeError:
-                    # Check if it's double-quoted
-                    if isinstance(token, str) and token.startswith('"') and token.endswith('"'):
-                        # remove the outer quotes and try again
-                        token = token[1:-1]
-                        token = token.replace('\\"', '"')
-                        parsed_token = json.loads(token)
+                parsed_token = token
+                for _ in range(2):
+                    if isinstance(parsed_token, str):
+                        parsed_token = json.loads(parsed_token)
                     else:
-                        raise
+                        break
+                    
                 if not isinstance(parsed_token, dict):
                     raise ValueError(f"Parsed token is not a dictionary: {type(parsed_token)}")
                 
