@@ -95,6 +95,9 @@ def test_hass_config_missing_url(app, mock_websocket_manager):
     """Test Home Assistant configuration with missing URL."""
     mock_manager, mock_instance = mock_websocket_manager
 
+    # Delete the current url from the app config
+    app.config.pop("url")
+
     with app.test_request_context("/hass-config", method="POST"):
         # Don't set app.config["url"]
         response = app.view_functions["hassconfig"]()

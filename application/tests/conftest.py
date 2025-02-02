@@ -18,6 +18,8 @@ def app():
     app.config["UNIQUE_ID"] = "remote-assist-display-112233445566-test-hostname"
     app.config["LOG_DIR"] = "/tmp"
     app.config["CONFIG_DIR"] = "/tmp"
+    app.config["DEVICE_NAME_KEY"] = "device_name"
+    app.config["url"] = "http://test.local:8123"
 
     return app
 
