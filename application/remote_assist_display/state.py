@@ -44,6 +44,22 @@ class DisplayState:
         if self.websocket_manager and self.websocket_manager.client:
             asyncio.create_task(self.update_current_url(url))
 
+    async def load_hass_path(self, path, local_storage=True):
+        """Load a Home Assistant path."""
+        push_state = f"""
+            async function browser_navigate(path) {{
+                if (!path) return;
+                history.pushState(null, "", path);
+                window.dispatchEvent(new CustomEvent("location-changed"));
+            }}
+            browser_navigate("{path}");
+            """
+        webview.windows[0].evaluate_js(push_state)
+        if local_storage:
+            self.set_local_storage()
+        if self.websocket_manager and self.websocket_manager.client:
+            asyncio.create_task(self.update_current_url(f"{current_app.config['url']}/{path}"))
+
     def set_local_storage(self):
         key = current_app.config["DEVICE_NAME_KEY"]
         value = current_app.config["UNIQUE_ID"]
@@ -53,30 +69,34 @@ class DisplayState:
 
     async def load_card(self, event, expire_time=None):
         card_path = event.get("path")
-        if card_path and card_path.startswith("/"):
+        if not card_path:
+            return
+        if card_path.startswith("/"):
             card_path = card_path[1:]
         hass_url = current_app.config["url"]
+        current_url = webview.windows[0].get_current_url()
+        # If we're already on home assistant, navigate via js
+        if current_url and  current_url.startswith(hass_url):
+            await self.load_hass_path(card_path)
+        else:
+            await self.load_url(f"{hass_url}/{card_path}")
 
-        if card_path:
-            new_url = f"{hass_url}/{card_path}"
-            default_dashboard_url = (
-                f"{hass_url}/{current_app.config.get('default_dashboard')}"
-            )
-            await self.load_url(new_url)
-            self.set_local_storage()
+        default_dashboard_url = (
+            f"{hass_url}/{current_app.config.get('default_dashboard')}"
+        )
 
-            # Cancel any existing timer
-            if self.load_card_timer and not self.load_card_timer.done():
-                self.load_card_timer.cancel()
+        # Cancel any existing timer
+        if self.load_card_timer and not self.load_card_timer.done():
+            self.load_card_timer.cancel()
 
-            # Start a new async timer if expire_time is set
-            if expire_time:
+        # Start a new async timer if expire_time is set
+        if expire_time:
 
-                async def timer_callback():
-                    try:
-                        await asyncio.sleep(expire_time)
-                        await self.load_url(default_dashboard_url)
-                    except asyncio.CancelledError:
-                        pass
+            async def timer_callback():
+                try:
+                    await asyncio.sleep(expire_time)
+                    await self.load_url(default_dashboard_url)
+                except asyncio.CancelledError:
+                    pass
 
-                self.load_card_timer = asyncio.create_task(timer_callback())
+            self.load_card_timer = asyncio.create_task(timer_callback())
