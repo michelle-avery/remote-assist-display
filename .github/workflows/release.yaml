@@ -76,6 +76,25 @@ jobs:
       run: |
         sudo chown -R $USER:$USER ${{ github.workspace }}
 
+    - name: Set up debug keystore
+      run: |
+        mkdir -p ${{ github.workspace }}/.buildozer/android/platform/
+        echo "${{ secrets.DEBUG_KEYSTORE }}" | base64 -d > ${{ github.workspace }}/.buildozer/android/platform/debug.keystore
+        chmod 600 ${{ github.workspace }}/.buildozer/android/platform/debug.keystore
+
+    # For now we're still using debug builds, but this prepares for future release builds
+    # Uncomment and configure these when ready for release builds:
+    #- name: Set up release keystore
+    #  if: github.event_name == 'release'
+    #  run: |
+    #    echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > ${{ github.workspace }}/.buildozer/android/platform/release.keystore
+    #    chmod 600 ${{ github.workspace }}/.buildozer/android/platform/release.keystore
+    #    # Update buildozer.spec with release keystore settings
+    #    sed -i 's/android.keystore = .*/android.keystore = \/home\/user\/.buildozer\/android\/platform\/release.keystore/' build/buildozer.spec
+    #    sed -i 's/android.keyalias = .*/android.keyalias = ${{ secrets.KEY_ALIAS }}/' build/buildozer.spec
+    #    sed -i 's/android.keystore_password = .*/android.keystore_password = ${{ secrets.KEYSTORE_PASSWORD }}/' build/buildozer.spec
+    #    sed -i 's/android.keyalias_password = .*/android.keyalias_password = ${{ secrets.KEY_PASSWORD }}/' build/buildozer.spec
+
     - name: Build APK
       run: |
         docker run --rm \
