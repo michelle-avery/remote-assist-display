@@ -1,0 +1,43 @@
+{
+    "options": {
+       "step": {
+        "init": {
+            "data": {
+                "default_dashboard_path": "The default dashboard for newly added devices.",
+                "device_name_storage_key": "The key used to store the device name in local storage.",
+                "event_type": "The event type to listen to which contains the result of an Assist interaction. Used to update the intent sensor."
+            }
+        }
+       }
+    },
+    "services": {
+        "navigate_url": {
+            "name": "Navigate to a URL",
+            "description": "Navigate to any URL in the remote assist display.",
+            "fields": {
+                "target": {
+                    "name": "Target",
+                    "description": "The target device."
+                },
+                "url": {
+                    "name": "URL",
+                    "description": "The URL to navigate to."
+                }
+            }
+        },
+        "navigate": {
+            "name": "Navigate",
+            "description": "Navigate to a Home Assistant dashboard in the remote assist display.",
+            "fields": {
+                "target": {
+                    "name": "Target",
+                    "description": "The target device."
+                },
+                "path": {
+                    "name": "Path",
+                    "description": "The path of the dashboard to navigate to."
+                }
+            }
+        }
+    }
+}
