@@ -52,7 +52,7 @@ class DisplayState:
                 history.pushState(null, "", path);
                 window.dispatchEvent(new CustomEvent("location-changed"));
             }}
-            browser_navigate("{path}");
+            browser_navigate("/{path}");
             """
         webview.windows[0].evaluate_js(push_state)
         if local_storage:
