@@ -77,8 +77,12 @@ class DisplayState:
         current_url = webview.windows[0].get_current_url()
         # If we're already on home assistant, navigate via js
         if current_url and  current_url.startswith(hass_url):
+            current_app.logger.debug(f"Current URL: {current_url}")
+            current_app.logger.debug(f"Loading card {card_path} via js")
             await self.load_hass_path(card_path)
         else:
+            current_app.logger.debug(f"Current URL: {current_url}")
+            current_app.logger.debug(f"Loading card {card_path} via url")
             await self.load_url(f"{hass_url}/{card_path}")
 
         default_dashboard_url = (
