@@ -121,9 +121,6 @@ async def test_remote_assist_display_initialization(hass, mock_adders, mock_send
     assert mock_adders["text"].call_count == 2
     assert mock_adders["select"].call_count == 1
 
-    # Verify send was called
-    mock_send.assert_called_once()
-
 async def test_update_data(hass, mock_adders, mock_send, setup_config_entry):
     """Test updating display data."""
     display = RemoteAssistDisplay(hass, "test_display")

@@ -140,12 +140,6 @@ class RemoteAssistDisplay:
             adder([new])
             self.entities["intent_sensor"] = new
 
-        hass.create_task(
-            self.send(
-                None,
-                display_entities={k: v.entity_id for k, v in self.entities.items()},
-            )
-        )
 
     @callback
     async def send(self, command, **kwargs):
