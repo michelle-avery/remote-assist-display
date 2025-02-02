@@ -107,6 +107,12 @@ jobs:
         ls -la
         ls -la build
 
+    - name: Set up debug keystore
+      run: |
+        mkdir -p ${{ github.workspace }}/.buildozer/android/platform/
+        echo "${{ secrets.DEBUG_KEYSTORE }}" | base64 -d > ${{ github.workspace }}/.buildozer/android/platform/debug.keystore
+        chmod 600 ${{ github.workspace }}/.buildozer/android/platform/debug.keystore
+
     - name: Build APK
       run: |
         docker run --rm \

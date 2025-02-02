@@ -283,6 +283,12 @@ android.add_resources =  network_security_config.xml:xml/network_security_config
 # (bool) Copy library instead of making a libpymodules.so
 #android.copy_libs = 1
 
+# Android signing configuration
+android.keystore = /home/user/.buildozer/android/platform/debug.keystore
+android.keyalias = androiddebugkey
+android.keystore_password = android
+android.keyalias_password = android
+
 # (list) The Android archs to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
 # In past, was `android.arch` as we weren't supporting builds for multiple archs at the same time.
 android.archs = arm64-v8a, armeabi-v7a
