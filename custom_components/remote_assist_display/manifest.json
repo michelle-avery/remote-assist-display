@@ -5,6 +5,7 @@
   "config_flow": true,
   "dependencies": ["http", "websocket_api"],
   "after_dependencies": ["cloud"],
+  "iot_class": "local_push",
   "documentation": "https://github.com/michelle-avery/remote-assist-display",
   "issue_tracker": "https://github.com/michelle-avery/remote-assist-display/issues",
   "version": "0.0.1"
