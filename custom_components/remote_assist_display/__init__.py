@@ -1,7 +1,10 @@
 """The Remote Assist Display integration."""
 
+import json
 import logging
 
+from homeassistant.components.frontend import add_extra_js_url
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
@@ -9,7 +12,7 @@ from homeassistant.helpers import device_registry as dr
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.typing import ConfigType
 
-from .const import DATA_ADDERS, DATA_DISPLAYS, DOMAIN, DATA_CONFIG_ENTRY
+from .const import DATA_ADDERS, DATA_DISPLAYS, DOMAIN, DATA_CONFIG_ENTRY, FRONTEND_SCRIPT_URL
 from .service import async_setup_services
 from .ws_api import async_setup_ws_api
 
@@ -19,6 +22,10 @@ CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
 
 PLATFORMS = [Platform.SENSOR, Platform.TEXT, Platform.SELECT]
 
+def get_version(hass: HomeAssistant):
+    with open(hass.config.path("custom_components/remote_assist_display/manifest.json"), "r") as fp:
+        manifest = json.load(fp)
+        return manifest["version"]
 
 async def async_setup(hass: HomeAssistant, config: ConfigType):
     """Set up the Remote Assist Display component."""
@@ -27,6 +34,51 @@ async def async_setup(hass: HomeAssistant, config: ConfigType):
         DATA_DISPLAYS: {},
         DATA_ADDERS: {},
     }
+
+    version = await hass.async_add_executor_job(get_version, hass)
+
+    await hass.http.async_register_static_paths(
+        [
+            StaticPathConfig(
+                FRONTEND_SCRIPT_URL,
+                hass.config.path("custom_components/remote_assist_display/remote_assist_display.js"),
+                True,
+            )
+        ]
+    )
+    add_extra_js_url(hass, FRONTEND_SCRIPT_URL + "?" + version)
+
+    resources = hass.data["lovelace"]["resources"]
+    if resources:
+        if not resources.loaded:
+            await resources.async_load()
+            resources.loaded = True
+
+        frontend_added = False
+        for r in resources.async_items():
+            if r["url"].startswith(FRONTEND_SCRIPT_URL):
+                frontend_added = True
+                break
+
+        if not frontend_added:
+            if getattr(resources, "async_create_item", None):
+                await resources.async_create_item(
+                    {
+                        "res_type": "module",
+                        "url": FRONTEND_SCRIPT_URL + "?automatically-added" + "&" + version,
+                    }
+                )
+            elif getattr(resources, "data", None) and getattr(
+                resources.data, "append", None
+            ):
+                resources.data.append(
+                    {
+                        "type": "module",
+                        "url": FRONTEND_SCRIPT_URL + "?automatically-added" + "&" + version,
+                    }
+                )
+
+
 
     return True
 
