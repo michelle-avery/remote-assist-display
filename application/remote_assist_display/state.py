@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 from typing import Optional
 
@@ -63,8 +64,17 @@ class DisplayState:
     def set_local_storage(self):
         key = current_app.config["DEVICE_NAME_KEY"]
         value = current_app.config["UNIQUE_ID"]
+        rad_key = current_app.config["RAD_DISPLAY_NAME_KEY"]
+
+        settings = {
+            "hideHeader": current_app.config.get("hide_header", False),
+            "hideSidebar": current_app.config.get("hide_sidebar", False),
+        }
+
         webview.windows[0].evaluate_js(f"""
             localStorage.setItem("{key}", "{value}")
+            localStorage.setItem("{rad_key}", "{value}")
+            localstorage.setItem("remote_assist_display_settings", '{json.dumps(settings)})
         """)
 
     async def load_card(self, event, expire_time=None):
