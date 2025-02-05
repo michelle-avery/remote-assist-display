@@ -10,7 +10,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from .const import DATA_ADDERS, DATA_CONFIG_ENTRY, DATA_DISPLAYS, DOMAIN
 from .select import RADAssistSatelliteSelect
 from .sensor import RADIntentSensor, RADSensor
-from .switch import RADHideHeaderSwitch
+from .switch import RADHideHeaderSwitch, RADHideSidebarSwitch
 from .text import DefaultDashboardText, DeviceStorageKeyText
 
 _LOGGER = logging.getLogger(__name__)
@@ -155,6 +155,12 @@ class RemoteAssistDisplay:
             new = RADHideHeaderSwitch(coordinator, display_id, self)
             adder([new])
             self.entities["hide_header"] = new
+
+        if "hide_sidebar" not in self.entities:
+            adder = hass.data[DOMAIN][DATA_ADDERS]["switch"]
+            new = RADHideSidebarSwitch(coordinator, display_id, self)
+            adder([new])
+            self.entities["hide_sidebar"] = new
 
     @callback
     async def send(self, command, **kwargs):

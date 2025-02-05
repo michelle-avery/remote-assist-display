@@ -56,7 +56,7 @@ class DefaultDashboardText(RADEntity, RestoreText):
 
     @property
     def native_value(self):
-        val = self._data.get("settings", {}).get("default_dashboard", None)
+        val = self._data.get("default_dashboard", None)
         if not val:
             try:
                 val = self._attr_native_value
@@ -76,7 +76,7 @@ class DefaultDashboardText(RADEntity, RestoreText):
         """Set the default dashboard."""
         self._value = value
         data = {
-            "settings": {"default_dashboard": value},
+            "default_dashboard": value,
             "display": {"default_dashboard": value},
         }
         self.display.update_settings(self.hass, data)
@@ -107,7 +107,7 @@ class DeviceStorageKeyText(RADEntity, RestoreText):
 
     @property
     def native_value(self):
-        val = self._data.get("settings", {}).get("device_name_storage_key", None)
+        val = self._data.get("device_name_storage_key", None)
         if not val:
             try:
                 val = self._attr_native_value
@@ -125,7 +125,7 @@ class DeviceStorageKeyText(RADEntity, RestoreText):
         """Set the device storage key."""
         self._value = value
         data = {
-            "settings": {"device_name_storage_key": value},
+            "device_name_storage_key": value,
             "display": {"device_name_storage_key": value},
         }
         self.display.update_settings(self.hass, data)

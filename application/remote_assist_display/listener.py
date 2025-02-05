@@ -22,7 +22,7 @@ class EventRouter:
             command = event_data.get("command")
 
             if command == "remote_assist_display/update_settings":
-                settings = event_data.get("settings", {}).get("settings", {})
+                settings = event_data.get("settings", {})
                 if settings:
                     await self._update_settings(settings)
             elif command == "remote_assist_display/navigate_url":

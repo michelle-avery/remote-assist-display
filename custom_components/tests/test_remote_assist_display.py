@@ -26,6 +26,7 @@ def mock_adders(hass):
         "sensor": Mock(),
         "text": Mock(),
         "select": Mock(),
+        "switch": Mock(),
     }
     return hass.data[DOMAIN][DATA_ADDERS]
 
