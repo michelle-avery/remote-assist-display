@@ -1,126 +1,149 @@
-const RemoteAssistDisplay = (SuperClass) => {
-  class RemoteAssistDisplayClass extends SuperClass {
-    constructor() {
-      super();
-      this._setupDisplay();
+class RemoteAssistDisplay {
+  constructor() {
+    this.initAttempts = 0;
+    this.initializeWhenReady();
+  }
 
-      window.addEventListener("location-changed", () => {
-        this._setupDisplay();
-      });
+  async initializeWhenReady(attempts = 0) {
+    if (attempts > 50) {
+      console.log("Failed to initialize after 50 attempts");
+      return;
     }
 
-    async _setupDisplay() {
-      // Get display settings from localStorage
-      const displayId = localStorage.getItem("remote_assist_display_id");
-      if (!displayId) return;  // Not a remote assist display instance
-
-      const settings = JSON.parse(localStorage.getItem(`remote_assist_display_${displayId}_settings`) || "{}");
-
-      if (settings.hideHeader || settings.hideSidebar) {
-        await this._hideChrome(settings);
-      }
-    }
-
-    async _hideChrome(settings) {
-      const rootEl = await this._getRootElement();
-      if (!rootEl) return;
-
-      let header = await this._findHeader(rootEl);
-      let menuButton;
-
-      if (header) {
-        menuButton = header.querySelector("ha-menu-button");
-      } else {
-        // Try alternative header location
-        let el = rootEl;
-        let steps = 0;
-        while (el && el.localName !== "ha-top-app-bar-fixed" && steps++ < 5) {
-          await this._waitForElement(el, true);
-          const next = el.querySelector("ha-top-app-bar-fixed")
-                      ?? el.firstElementChild
-                      ?? el.shadowRoot;
-          el = next;
-        }
-
-        if (el?.localName === "ha-top-app-bar-fixed") {
-          header = el.shadowRoot.querySelector("header");
-          menuButton = el.querySelector("ha-menu-button");
-        }
+    try {
+      const ha = document.querySelector("home-assistant");
+      if (!ha?.shadowRoot || !ha.hass) {
+        throw new Error("Home Assistant not ready");
       }
 
-      if (!header && !menuButton) return;
-
-      if (header && settings.hideHeader) {
-        rootEl.style.setProperty("--header-height", "0px");
-        header.style.setProperty("display", "none");
+      const main = ha.shadowRoot.querySelector("home-assistant-main");
+      if (!main?.shadowRoot) {
+        throw new Error("Main UI not ready");
       }
 
-      if (settings.hideSidebar) {
-        if (menuButton) {
-          menuButton.remove();
-        }
+      this.ha = ha;
+      this.main = main.shadowRoot;
+      this.initAttempts = 0;
 
-        const mainEl = document.querySelector("home-assistant home-assistant-main");
-        if (mainEl) {
-          mainEl.style.setProperty("--mdc-drawer-width", "0px");
-        }
+      console.log("RemoteAssistDisplay initialized");
 
-        const sidebar = document.querySelector(
-          "home-assistant home-assistant-main ha-drawer ha-sidebar"
-        );
-        if (sidebar) {
-          sidebar.remove();
-        }
-      }
-    }
+      await this.run();
 
-    async _getRootElement() {
-      const rootSelector = "home-assistant home-assistant-main ha-drawer partial-panel-resolver";
-      const parts = rootSelector.split(" ");
-      let current = document.body;
+      // Set up observers
+      this.setupObservers();
 
-      for (const part of parts) {
-        current = await this._findElement(part, current);
-        if (!current) return null;
-        if (current.shadowRoot) {
-          current = current.shadowRoot;
-        }
-      }
-      return current;
-    }
-
-    async _findElement(selector, root = document.body) {
-      for (let i = 0; i < 10; i++) {
-        const el = root.querySelector(selector);
-        if (el) return el;
-        await new Promise(r => setTimeout(r, 500));
-      }
-      return null;
-    }
-
-    async _findHeader(rootEl) {
-      return await this._findElement(
-        "ha-panel-lovelace hui-root .header",
-        rootEl
-      );
-    }
-
-    async _waitForElement(el, shadowRoot = false) {
-      if (shadowRoot) {
-        while (!el.shadowRoot) {
-          await new Promise(r => setTimeout(r, 100));
-        }
-      }
-      return true;
+    } catch (e) {
+      setTimeout(() => this.initializeWhenReady(attempts + 1), 100);
     }
   }
 
-  return RemoteAssistDisplayClass;
-};
+  setupObservers() {
+    const resolver = this.main.querySelector("partial-panel-resolver");
+    if (resolver) {
+      console.log("Setting up observers");
+      new MutationObserver(() => {
+        clearTimeout(this.updateTimer);
+        this.updateTimer = setTimeout(() => this.run(), 100);
+      }).observe(resolver, { childList: true });
+    }
 
-// Only register if not already registered
-const ELEMENT_NAME = "remote-assist-display";
-if (!customElements.get(ELEMENT_NAME)) {
-  const displayElement = RemoteAssistDisplay(HTMLElement);
-  customElements.define(ELEMENT_NAME, displayElement);
+    window.addEventListener("location-changed", () => {
+      clearTimeout(this.updateTimer);
+      this.updateTimer = setTimeout(() => this.run(), 100);
+    });
+  }
+
+  async run() {
+    const lovelace = this.main.querySelector("ha-panel-lovelace");
+    if (!lovelace) {
+      console.log("No lovelace panel found");
+      return;
+    }
+
+    const displayId = localStorage.getItem("remote_assist_display_id");
+    if (!displayId) return;
+
+    const settings = JSON.parse(localStorage.getItem(`remote_assist_display_settings`) || "{}");
+    if (!settings.hideHeader && !settings.hideSidebar) return;
+
+    console.log("Checking Lovelace configuration");
+
+    this.initAttempts++;
+    try {
+      await this.waitForElement(() => lovelace.lovelace?.config, "Lovelace config");
+      const huiRoot = lovelace.shadowRoot?.querySelector("hui-root");
+      await this.waitForElement(() => huiRoot?.shadowRoot, "hui-root shadow");
+
+      console.log("Processing settings:", settings);
+      await this.processConfig(huiRoot, settings);
+    } catch (e) {
+      console.log("Configuration error:", e);
+    }
+  }
+
+  async waitForElement(getter, name, maxAttempts = 100) {
+    for (let i = 0; i < maxAttempts; i++) {
+      const result = getter();
+      if (result) return result;
+      await new Promise(r => setTimeout(r, 50));
+    }
+    throw new Error(`Timeout waiting for ${name}`);
+  }
+
+  async processConfig(huiRoot, settings) {
+    if (!huiRoot.shadowRoot) return;
+
+    if (settings.hideHeader) {
+      console.log("Applying header modifications");
+      const view = huiRoot.shadowRoot.querySelector("#view");
+      if (view) {
+        view.style.setProperty("min-height", "100vh", "important");
+        view.style.setProperty("padding-top", "calc(0px + env(safe-area-inset-top))", "important");
+      }
+
+      const header = huiRoot.shadowRoot.querySelector("header");
+      if (header) {
+        header.style.setProperty("display", "none", "important");
+      }
+
+      huiRoot.style.setProperty("--header-height", "0", "important");
+      document.documentElement.style.setProperty("--header-height", "0", "important");
+    }
+
+    if (settings.hideSidebar) {
+      console.log("Applying sidebar modifications");
+
+      // Set the drawer width to 0
+      this.main.host.style.setProperty("--mdc-drawer-width", "0", "important");
+
+      // Make sure panel takes full width
+      const panel = this.main.querySelector("partial-panel-resolver");
+      if (panel) {
+        panel.style.setProperty("--mdc-top-app-bar-width", "100%", "important");
+      }
+
+      // Hide the sidebar itself
+      const sidebar = this.main.querySelector("ha-drawer ha-sidebar");
+      if (sidebar) {
+        sidebar.style.setProperty("display", "none", "important");
+      }
+
+      // Hide the menu button
+      const menuButton = huiRoot.shadowRoot.querySelector("ha-menu-button");
+      if (menuButton) {
+        menuButton.style.setProperty("display", "none", "important");
+      }
+    }
+
+    window.dispatchEvent(new Event("resize"));
+  }
 }
+
+// Wait for core web components
+Promise.all([
+  customElements.whenDefined("home-assistant"),
+  customElements.whenDefined("hui-view")
+]).then(() => {
+  console.log("Starting RemoteAssistDisplay");
+  window.RemoteAssistDisplay = new RemoteAssistDisplay();
+});
