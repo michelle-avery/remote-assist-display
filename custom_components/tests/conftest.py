@@ -4,7 +4,7 @@ from homeassistant.const import CONF_DOMAIN
 from homeassistant.core import HomeAssistant
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from custom_components.remote_assist_display.const import DOMAIN, DATA_CONFIG_ENTRY
 
 
@@ -51,6 +51,9 @@ def mock_display():
 @pytest.fixture
 async def init_integration(hass, config_entry):
     """Set up the Remote Assist Display integration for testing."""
-    await async_setup_component(hass, DOMAIN, {CONF_DOMAIN: {}})
-    await hass.async_block_till_done()
-    return config_entry
+    # Patch path.open to return a mock manifest
+    with patch("custom_components.remote_assist_display.get_version") as mock_get_version:
+        mock_get_version.return_value = "0.0.1"
+        await async_setup_component(hass, DOMAIN, {CONF_DOMAIN: {}})
+        await hass.async_block_till_done()
+        return config_entry
