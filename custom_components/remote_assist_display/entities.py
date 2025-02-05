@@ -1,3 +1,5 @@
+"""Entities for Remote Assist Display integration."""
+
 import logging
 
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -8,7 +10,9 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class RADEntity(CoordinatorEntity):
-    def __init__(self, coordinator, display_id, name, icon=None):
+    """Entity class for Remote Assist Display integration."""
+
+    def __init__(self, coordinator, display_id, name, icon=None) -> None:
         """Initialize the Remote Assist Display entity."""
         super().__init__(coordinator)
         self.display_id = display_id
