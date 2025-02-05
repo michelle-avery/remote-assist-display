@@ -38,12 +38,13 @@ class EventRouter:
             self.app.config["default_dashboard"] = default_dashboard
             dashboard_url = f"{self.app.config['url']}/{default_dashboard}"
             logger.info(f"Updating default dashboard to: {dashboard_url}")
-            await self.display_state.load_url(dashboard_url)
         if device_name_key := settings.get("device_name_key"):
             self.app.config["DEVICE_NAME_KEY"] = device_name_key
             self.display_state.set_local_storage()
-        if hide_header := settings.get("hide_header"):
-            self.app.config["hide_header"] = hide_header
-        if hide_sidebar := settings.get("hide_sidebar"):
-            self.app.config["hide_sidebar"] = hide_sidebar
+        if "hide_header" in settings:
+            self.app.config["hide_header"] = settings.get("hide_header")
+        if "hide_sidebar" in settings:
+            self.app.config["hide_sidebar"] = settings.get("hide_sidebar")
+        # Always  load the default dashboard after updating settings
+        await self.display_state.load_url(f"{self.app.config['url']}/{self.app.config['default_dashboard']}")
             
