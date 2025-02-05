@@ -3,20 +3,30 @@
 import logging
 
 from homeassistant.components.websocket_api import event_message
-from homeassistant.core import HomeAssistant, Event, callback
+from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers import device_registry, entity_registry
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from .const import DATA_ADDERS, DATA_DISPLAYS, DOMAIN, DATA_CONFIG_ENTRY
+from .const import DATA_ADDERS, DATA_CONFIG_ENTRY, DATA_DISPLAYS, DOMAIN
 from .select import RADAssistSatelliteSelect
-from .sensor import RADSensor, RADIntentSensor
+from .sensor import RADIntentSensor, RADSensor
+from .switch import RADHideHeaderSwitch
 from .text import DefaultDashboardText, DeviceStorageKeyText
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class Coordinator(DataUpdateCoordinator):
-    def __init__(self, hass, display_id):
+    """Coordinator class to handle Remote Assist Display data updates."""
+
+    def __init__(self, hass: HomeAssistant, display_id: str) -> None:
+        """Initialize the Remote Assist Display Coordinator.
+
+        Args:
+            hass: HomeAssistant instance.
+            display_id: Identifier for the display.
+
+        """
         super().__init__(hass, _LOGGER, name="Remote Assist Display Coordinator")
         self.display_id = display_id
 
@@ -140,6 +150,11 @@ class RemoteAssistDisplay:
             adder([new])
             self.entities["intent_sensor"] = new
 
+        if "hide_header" not in self.entities:
+            adder = hass.data[DOMAIN][DATA_ADDERS]["switch"]
+            new = RADHideHeaderSwitch(coordinator, display_id, self)
+            adder([new])
+            self.entities["hide_header"] = new
 
     @callback
     async def send(self, command, **kwargs):
