@@ -92,14 +92,20 @@ class DisplayState:
         if card_path.startswith("/"):
             card_path = card_path[1:]
         hass_url = current_app.config["url"]
-        current_url = webview.windows[0].get_current_url()
+        # Check if we're already on the Home Assistant URL
+        url_js = "window.location.href"
+        current_url = webview.windows[0].evaluate_js(url_js)
+        # Strip any quotes from the current URL
+        current_url = current_url.strip("'\"")
+        current_app.logger.debug(f"Current URL: {current_url}")
+        current_app.logger.debug(f"HA URL: {hass_url}")
+
         # If we're already on home assistant, navigate via js
         if current_url and  current_url.startswith(hass_url):
-            current_app.logger.debug(f"Current URL: {current_url}")
             current_app.logger.debug(f"Loading card {card_path} via js")
             await self.load_hass_path(card_path)
         else:
-            current_app.logger.debug(f"Current URL: {current_url}")
+            current_app.logger.debug(f"Result: {current_url.startswith(hass_url)}")
             current_app.logger.debug(f"Loading card {card_path} via url")
             await self.load_url(f"{hass_url}/{card_path}")
 
