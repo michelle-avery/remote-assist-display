@@ -12,9 +12,9 @@ from homeassistant.config_entries import (
 from homeassistant.core import HomeAssistant, callback
 
 from .const import (
-    DOMAIN,
-    DEFAULT_HOME_ASSISTANT_DASHBOARD,
     DEFAULT_DEVICE_NAME_STORAGE_KEY,
+    DEFAULT_HOME_ASSISTANT_DASHBOARD,
+    DOMAIN,
 )
 
 
