@@ -51,6 +51,9 @@ class Config(object):
     FLASK_DEBUG = env.bool("FLASK_DEBUG", False)
     FULLSCREEN = env.bool("FULLSCREEN", True)
     WEBVIEW_DEBUG = env.bool("WEBVIEW_DEBUG", False)
+    # The device gets a local storage key from the server, but this one is also ALWAYS set, because
+    # our frontend JS code expects it to be there
+    RAD_DISPLAY_NAME_KEY = "remote_assist_display_id"
 
     SEND_FILE_MAX_AGE_DEFAULT = env.int("SEND_FILE_MAX_AGE_DEFAULT", 1)
     # Number of times to retry fetching token

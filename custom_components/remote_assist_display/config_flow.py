@@ -12,9 +12,9 @@ from homeassistant.config_entries import (
 from homeassistant.core import HomeAssistant, callback
 
 from .const import (
-    DOMAIN,
-    DEFAULT_HOME_ASSISTANT_DASHBOARD,
     DEFAULT_DEVICE_NAME_STORAGE_KEY,
+    DEFAULT_HOME_ASSISTANT_DASHBOARD,
+    DOMAIN,
 )
 
 
@@ -37,6 +37,10 @@ def remote_assist_display_config_option_schema(
     return vol.Schema(
         {
             vol.Optional(
+                "event_type",
+                default=options.get("event_type", ""),
+            ): str,
+            vol.Optional(
                 "default_dashboard_path",
                 default=options.get(
                     "default_dashboard_path", DEFAULT_HOME_ASSISTANT_DASHBOARD
@@ -48,10 +52,14 @@ def remote_assist_display_config_option_schema(
                     "device_name_storage_key", DEFAULT_DEVICE_NAME_STORAGE_KEY
                 ),
             ): str,
-            vol.Optional(
-                "event_type",
-                default=options.get("event_type", ""),
-            ): str,
+            vol.Required(
+                "hide_header",
+                default=options.get("hide_header", False),
+            ): bool,
+            vol.Required(
+                "hide_sidebar",
+                default=options.get("hide_sidebar", False),
+            ): bool,
         }
     )
 

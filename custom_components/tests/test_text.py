@@ -28,11 +28,7 @@ async def test_dashboard_native_value_from_settings(mock_coordinator, mock_displ
         display=mock_display,
     )
 
-    entity.coordinator.data = {
-        "settings": {
-            "default_dashboard": "/lovelace/test"
-        }
-    }
+    entity.coordinator.data = {"default_dashboard": "/lovelace/test"}
 
     assert entity.native_value == "/lovelace/test"
 
@@ -74,11 +70,7 @@ async def test_dashboard_native_value_truncation(mock_coordinator, mock_display)
     
     long_path = "/lovelace/" + "x" * 300
     
-    entity.coordinator.data = {
-        "settings": {
-            "default_dashboard": long_path
-        }
-    }
+    entity.coordinator.data = {"default_dashboard": long_path }
     
     result = entity.native_value
     assert len(result) <= 255
@@ -104,7 +96,7 @@ async def test_dashboard_async_set_value(hass, mock_coordinator, mock_display):
         mock_display.update_settings.assert_called_once_with(
             hass,
             {
-                "settings": {"default_dashboard": "/lovelace/new"},
+                "default_dashboard": "/lovelace/new",
                 "display": {"default_dashboard": "/lovelace/new"},
             }
         )
@@ -133,11 +125,7 @@ async def test_device_storage_key_native_value_from_settings(mock_coordinator, m
         display=mock_display,
     )
 
-    entity.coordinator.data = {
-        "settings": {
-            "device_name_storage_key": "test-key"
-        }
-    }
+    entity.coordinator.data = {"device_name_storage_key": "test-key"}
 
     assert entity.native_value == "test-key"
 
@@ -184,7 +172,7 @@ async def test_device_storage_key_async_set_value(hass, mock_coordinator, mock_d
         mock_display.update_settings.assert_called_once_with(
             hass,
             {
-                "settings": {"device_name_storage_key": "new-key"},
+                "device_name_storage_key": "new-key",
                 "display": {"device_name_storage_key": "new-key"},
             }
         )

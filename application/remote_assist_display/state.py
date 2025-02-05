@@ -1,9 +1,12 @@
 import asyncio
+import json
 import logging
 from typing import Optional
 
 import webview
 from flask import current_app
+
+from .auth import evaluate_js_safely
 
 logger = logging.getLogger(__name__)
 
@@ -63,9 +66,24 @@ class DisplayState:
     def set_local_storage(self):
         key = current_app.config["DEVICE_NAME_KEY"]
         value = current_app.config["UNIQUE_ID"]
-        webview.windows[0].evaluate_js(f"""
-            localStorage.setItem("{key}", "{value}")
-        """)
+        rad_key = current_app.config["RAD_DISPLAY_NAME_KEY"]
+
+        settings = {
+            "hideHeader": current_app.config.get("hide_header", False),
+            "hideSidebar": current_app.config.get("hide_sidebar", False),
+        }
+        settings = json.dumps(settings)
+
+        storage_js = f"""
+            localStorage.setItem("{key}", "{value}");
+            localStorage.setItem("{rad_key}", "{value}");
+            localStorage.setItem("remote_assist_display_settings", '{settings}');
+            if (window.RemoteAssistDisplay) {{
+                window.RemoteAssistDisplay.run();
+            }}
+        """
+        
+        webview.windows[0].evaluate_js(storage_js)
 
     async def load_card(self, event, expire_time=None):
         card_path = event.get("path")

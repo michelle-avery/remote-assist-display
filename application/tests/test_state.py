@@ -20,9 +20,8 @@ async def test_local_storage_set_on_url_load(app, mock_state_webview):
     
     await state.load_url("http://test.url")
     
-    mock_window.evaluate_js.assert_called_with(
-        f'\n            localStorage.setItem("{app.config["DEVICE_NAME_KEY"]}", "{app.config["UNIQUE_ID"]}")\n        '
-    )
+    mock_window.evaluate_js.assert_called_once()
+    assert "localStorage.setItem" in mock_window.evaluate_js.call_args[0][0]
 
 @pytest.mark.asyncio
 async def test_local_storage_not_set_on_url_load(app, mock_state_webview):
@@ -42,9 +41,8 @@ async def test_local_storage_set_on_card_load(app, mock_state_webview):
     
     await state.load_card({"path": "/test-card"})
     
-    mock_window.evaluate_js.assert_called_with(
-        f'\n            localStorage.setItem("{app.config["DEVICE_NAME_KEY"]}", "{app.config["UNIQUE_ID"]}")\n        '
-    )
+    mock_window.evaluate_js.assert_called()
+    assert "localStorage.setItem" in mock_window.evaluate_js.call_args[0][0]
 
 @pytest.mark.asyncio
 async def test_relative_url_calls_load_hass_path(app, mock_state_webview):

@@ -1,13 +1,22 @@
 {
     "options": {
        "step": {
-        "init": {
-            "data": {
-                "default_dashboard_path": "The default dashboard for newly added devices.",
-                "device_name_storage_key": "The key used to store the device name in local storage.",
-                "event_type": "The event type to listen to which contains the result of an Assist interaction. Used to update the intent sensor."
+            "init": {
+                "data": {
+                    "default_dashboard_path": "Default Dashboard",
+                    "device_name_storage_key": "Device Name Storage Key",
+                    "event_type": "Event Type",
+                    "hide_header": "Hide header by default on new devices",
+                    "hide_sidebar": "Hide sidebar by default on new devices"
+                },
+                "data_description": {
+                    "default_dashboard_path": "The default dashboard for newly added devices. This can be changed on a per-device basis.",
+                    "device_name_storage_key": "The key used to store the device name in local storage by default on new devices. This can be changed on a per-device basis.",
+                    "event_type": "The event type to listen to which contains the result of an Assist interaction. Used to update the intent sensor.",
+                    "hide_header": "Hide the header of home assistant pages by default on new devices.",
+                    "hide_sidebar": "Hide the sidebar of home assistant pages by default on new devices."
+                }
             }
-        }
        }
     },
     "services": {
