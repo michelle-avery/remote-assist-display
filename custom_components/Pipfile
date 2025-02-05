@@ -10,6 +10,7 @@ pytest-asyncio = "*"
 pytest-cov = "*"
 homeassistant = "*"
 voluptuous = "*"
+home-assistant-frontend = "*"
 
 [requires]
 python_version = "3.12"
