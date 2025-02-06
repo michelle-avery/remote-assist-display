@@ -1,5 +1,96 @@
+class StyleManager {
+  getStyleElement(root, prefix) {
+    if (!root) return null;
+    return root.querySelector(`#${prefix}`);
+  }
+
+  createStyleSheet(css, prefix) {
+    const style = document.createElement('style');
+    style.setAttribute('id', prefix);
+    style.innerHTML = css;
+    return style;
+  }
+
+  addStyle(css, root, prefix) {
+    if (!root) return;
+
+    let styleElement = this.getStyleElement(root, prefix);
+    if (!styleElement) {
+      styleElement = this.createStyleSheet(css, prefix);
+      root.appendChild(styleElement);
+    } else {
+      styleElement.innerHTML = css;
+    }
+  }
+
+  removeStyle(root, prefix) {
+    if (!root) return;
+    const styleElement = this.getStyleElement(root, prefix);
+    if (styleElement) {
+      styleElement.remove();
+    }
+  }
+}
+
+const STYLES = {
+  HEADER: {
+    '#view': {
+      'min-height': '100vh !important',
+      '--header-height': '0px !important',
+      '--kiosk-header-height': '0px !important',
+      'padding-top': 'calc(var(--kiosk-header-height) + env(safe-area-inset-top)) !important'
+    },
+    '.header': {
+      'display': 'none !important'
+    },
+    'app-header': {
+      'display': 'none !important'
+    },
+    'ha-app-layout': {
+      '--header-height': '0px !important'
+    },
+    'div[action-items]': {
+      'display': 'none !important'
+    },
+    'header > .toolbar': {
+      'display': 'none !important'
+    }
+  },
+  SIDEBAR: {
+    ':host': {
+      '--mdc-drawer-width': '0px !important'
+    },
+    'partial-panel-resolver': {
+      '--mdc-top-app-bar-width': '100% !important'
+    },
+    'ha-drawer > ha-sidebar': {
+      'display': 'none !important'
+    },
+    'ha-menu-button': {
+      'display': 'none !important'
+    },
+    '.mdc-drawer': {
+      'display': 'none !important'
+    }
+  }
+};
+
+
+function convertStylesToCSS(styles) {
+  return Object.entries(styles)
+    .map(([selector, rules]) => {
+      const cssRules = Object.entries(rules)
+        .map(([property, value]) => `${property}: ${value}`)
+        .join(';');
+      return `${selector} { ${cssRules} }`;
+    })
+    .join('\n');
+}
+
 class RemoteAssistDisplay {
   constructor() {
+    console.log("RemoteAssistDisplay initializing");
+    this.styleManager = new StyleManager();
     this.initAttempts = 0;
     this.initializeWhenReady();
   }
@@ -23,16 +114,18 @@ class RemoteAssistDisplay {
 
       this.ha = ha;
       this.main = main.shadowRoot;
-      this.initAttempts = 0;
-
       console.log("RemoteAssistDisplay initialized");
 
-      await this.run();
+      await this.waitForElement(
+        () => this.main.querySelector("partial-panel-resolver"),
+        "panel resolver"
+      );
 
-      // Set up observers
       this.setupObservers();
+      await this.checkForLovelacePanel();
 
     } catch (e) {
+      console.log("Initialization retry:", e.message);
       setTimeout(() => this.initializeWhenReady(attempts + 1), 100);
     }
   }
@@ -40,23 +133,41 @@ class RemoteAssistDisplay {
   setupObservers() {
     const resolver = this.main.querySelector("partial-panel-resolver");
     if (resolver) {
-      console.log("Setting up observers");
-      new MutationObserver(() => {
-        clearTimeout(this.updateTimer);
-        this.updateTimer = setTimeout(() => this.run(), 100);
+      console.log("Setting up panel observer");
+      new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+          for (const node of mutation.addedNodes) {
+            if (node.localName === "ha-panel-lovelace") {
+              console.log("Lovelace panel detected");
+              setTimeout(() => this.run(node), 100);
+            }
+          }
+        }
       }).observe(resolver, { childList: true });
     }
 
     window.addEventListener("location-changed", () => {
-      clearTimeout(this.updateTimer);
-      this.updateTimer = setTimeout(() => this.run(), 100);
+      console.log("Location changed, checking for panel");
+      this.checkForLovelacePanel();
     });
   }
 
-  async run() {
-    const lovelace = this.main.querySelector("ha-panel-lovelace");
-    if (!lovelace) {
-      console.log("No lovelace panel found");
+  async checkForLovelacePanel() {
+    const resolver = this.main.querySelector("partial-panel-resolver");
+    if (!resolver) return;
+
+    const panel = resolver.querySelector("ha-panel-lovelace");
+    if (panel) {
+      console.log("Found existing lovelace panel");
+      await this.run(panel);
+    } else {
+      console.log("No lovelace panel currently present");
+    }
+  }
+
+  async run(lovelacePanel) {
+    if (!lovelacePanel) {
+      console.log("No panel provided to run");
       return;
     }
 
@@ -66,80 +177,46 @@ class RemoteAssistDisplay {
     const settings = JSON.parse(localStorage.getItem(`remote_assist_display_settings`) || "{}");
     if (!settings.hideHeader && !settings.hideSidebar) return;
 
-    console.log("Checking Lovelace configuration");
+    console.log("Applying display settings:", settings);
 
-    this.initAttempts++;
     try {
-      await this.waitForElement(() => lovelace.lovelace?.config, "Lovelace config");
-      const huiRoot = lovelace.shadowRoot?.querySelector("hui-root");
+      await this.waitForElement(() => lovelacePanel.lovelace?.config, "panel config");
+      const huiRoot = lovelacePanel.shadowRoot?.querySelector("hui-root");
       await this.waitForElement(() => huiRoot?.shadowRoot, "hui-root shadow");
 
-      console.log("Processing settings:", settings);
-      await this.processConfig(huiRoot, settings);
+      if (settings.hideHeader) {
+        console.log("Applying header styles");
+        const css = convertStylesToCSS(STYLES.HEADER);
+        this.styleManager.addStyle(css, huiRoot.shadowRoot, 'remote-assist-display-header');
+      }
+
+      if (settings.hideSidebar) {
+        console.log("Applying sidebar styles");
+        const css = convertStylesToCSS(STYLES.SIDEBAR);
+        this.styleManager.addStyle(css, this.main, 'remote-assist-display-sidebar');
+      }
+
+      // Refresh view
+      window.dispatchEvent(new Event("resize"));
     } catch (e) {
-      console.log("Configuration error:", e);
+      console.log("Configuration error:", e.message);
     }
   }
 
   async waitForElement(getter, name, maxAttempts = 100) {
     for (let i = 0; i < maxAttempts; i++) {
       const result = getter();
-      if (result) return result;
+      if (result) {
+        console.log(`Found ${name}`);
+        return result;
+      }
       await new Promise(r => setTimeout(r, 50));
     }
     throw new Error(`Timeout waiting for ${name}`);
   }
-
-  async processConfig(huiRoot, settings) {
-    if (!huiRoot.shadowRoot) return;
-
-    if (settings.hideHeader) {
-      console.log("Applying header modifications");
-      const view = huiRoot.shadowRoot.querySelector("#view");
-      if (view) {
-        view.style.setProperty("min-height", "100vh", "important");
-        view.style.setProperty("padding-top", "calc(0px + env(safe-area-inset-top))", "important");
-      }
-
-      const header = huiRoot.shadowRoot.querySelector("header");
-      if (header) {
-        header.style.setProperty("display", "none", "important");
-      }
-
-      huiRoot.style.setProperty("--header-height", "0", "important");
-      document.documentElement.style.setProperty("--header-height", "0", "important");
-    }
-
-    if (settings.hideSidebar) {
-      console.log("Applying sidebar modifications");
-
-      // Set the drawer width to 0
-      this.main.host.style.setProperty("--mdc-drawer-width", "0", "important");
-
-      // Make sure panel takes full width
-      const panel = this.main.querySelector("partial-panel-resolver");
-      if (panel) {
-        panel.style.setProperty("--mdc-top-app-bar-width", "100%", "important");
-      }
-
-      // Hide the sidebar itself
-      const sidebar = this.main.querySelector("ha-drawer ha-sidebar");
-      if (sidebar) {
-        sidebar.style.setProperty("display", "none", "important");
-      }
-
-      // Hide the menu button
-      const menuButton = huiRoot.shadowRoot.querySelector("ha-menu-button");
-      if (menuButton) {
-        menuButton.style.setProperty("display", "none", "important");
-      }
-    }
-
-    window.dispatchEvent(new Event("resize"));
-  }
 }
 
-// Wait for core web components
+// Initialize when core web components are ready
 Promise.all([
   customElements.whenDefined("home-assistant"),
   customElements.whenDefined("hui-view")
