@@ -75,8 +75,19 @@ class RemoteAssistDisplay:
                 event_data.get("device_id")
                 == self.entities.get("assist_satellite").satellite_id
             ):
+                _LOGGER.debug(
+                    "Updating intent sensor for display %s with event data: %s",
+                    self.display_id,
+                    event_data,
+                )
                 self.entities.get("intent_sensor").update_from_event(
                     event_data["result"]
+                )
+            else:
+                _LOGGER.debug(
+                    "Event from assist satellite %s does not match display %s",
+                    event_data.get("device_id"),
+                    self.entities.get("assist_satellite").satellite_id,
                 )
 
         # Remove any existing event listener
@@ -84,6 +95,11 @@ class RemoteAssistDisplay:
             self._event_listener()
 
         # Set a new event listener
+        _LOGGER.debug(
+            "Setting event listener for display %s with event type %s",
+            self.display_id,
+            self._event_type,
+        )
         self._event_listener = self.coordinator.hass.bus.async_listen(  # Changed from coordinator.hass to self.hass
             self._event_type, handle_event
         )
