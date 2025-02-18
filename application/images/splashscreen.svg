@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg199"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   sodipodi:docname="splashscreen.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview201"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.79998597"
+     inkscape:cx="146.87758"
+     inkscape:cy="548.75962"
+     inkscape:window-width="1920"
+     inkscape:window-height="1007"
+     inkscape:window-x="2560"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer2" />
+  <defs
+     id="defs196" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer 2">
+    <rect
+       style="fill:#e1f5fe;fill-opacity:1;stroke-width:0.264583"
+       id="rect1008"
+       width="210.34743"
+       height="270.87192"
+       x="-1.5929944e-09"
+       y="10.583519" />
+    <text
+       xml:space="preserve"
+       style="font-size:9.87778px;fill:#40c4ff;fill-opacity:1;stroke-width:0.264583"
+       x="54.571312"
+       y="168.34328"
+       id="text1064"><tspan
+         sodipodi:role="line"
+         id="tspan1062"
+         style="font-size:9.87778px;fill:#40c4ff;fill-opacity:1;stroke-width:0.264583"
+         x="54.571312"
+         y="168.34328">Remote Assist Display</tspan></text>
+  </g>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g84"
+       transform="matrix(0.14547113,0,0,0.14547113,63.106847,82.095319)">
+      <!-- Scale up the original design to fit the space -->
+      <g
+         transform="scale(3)"
+         id="g82">
+        <path
+           d="m 85,40 75,50 H 10 Z"
+           fill="#40c4ff"
+           id="path72" />
+        <rect
+           x="30"
+           y="60"
+           width="110"
+           height="70"
+           rx="8"
+           fill="#40c4ff"
+           id="rect74" />
+        <rect
+           x="40"
+           y="70"
+           width="90"
+           height="50"
+           fill="#e1f5fe"
+           id="rect76" />
+        <circle
+           cx="85"
+           cy="95"
+           r="15"
+           fill="none"
+           stroke="#40c4ff"
+           stroke-width="2"
+           id="circle78" />
+        <circle
+           cx="85"
+           cy="95"
+           r="8"
+           fill="#40c4ff"
+           id="circle80" />
+      </g>
+    </g>
+    <path
+       style="fill:#e1f5fe;fill-opacity:1;stroke-width:0.330734"
+       d="m 80.699331,123.69488 v -10.74889 h 19.513359 19.51337 v 10.74889 10.74888 H 100.21269 80.699331 Z m 22.578359,6.25082 c 2.58797,-1.30788 3.94659,-3.51666 3.94659,-6.41619 0,-4.15033 -2.82173,-6.94544 -7.01159,-6.94544 -4.165986,0 -7.050172,2.84134 -7.050172,6.94544 0,5.26399 5.496356,8.7504 10.115172,6.41619 z"
+       id="path830" />
+    <rect
+       style="fill:#000000;fill-opacity:0;stroke-width:0.264583"
+       id="rect884"
+       width="212.33183"
+       height="274.17929"
+       x="-1.6536748"
+       y="12.567929" />
+  </g>
+</svg>
