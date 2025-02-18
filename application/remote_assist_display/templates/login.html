@@ -1,23 +1,185 @@
-<!-- login.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Home Assistant Login</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
-        form { display: inline-block; }
-        input[type="url"] { width: 300px; padding: 5px; margin: 10px 0; }
-        input[type="submit"] { padding: 5px 15px; }
-    </style>
-</head>
-<body>
-    <h1>Enter Home Assistant URL</h1>
-    <form id="urlForm" action="/connect" method="post" >
-        <input type="url" id="haUrl" name=haUrl placeholder="https://your-home-assistant-url" required>
-        <br>
-        <input type="submit" value="Connect">
-    </form>
-</body>
-</html>
+{% extends "base.html" %}
 
+{% block title %}Remote Assist Display - Login{% endblock %}
+
+{% block additional_styles %}
+.connect-title {
+    color: var(--text-color);
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+input[type="url"] {
+    padding: 0.75rem;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+input[type="url"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+input[type="url"].error {
+    border-color: #EF5350;
+}
+
+.submit-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 45px;
+}
+
+.submit-button:not(:disabled):hover {
+    background-color: #00B0FF;
+}
+
+.submit-button:disabled {
+    background-color: #90CAF9;
+    cursor: not-allowed;
+}
+
+.submit-button .spinner {
+    display: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid white;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: button-spin 0.6s linear infinite;
+    position: absolute;
+    right: 1rem;
+}
+
+.submit-button.loading .spinner {
+    display: block;
+}
+
+.error-banner {
+    background-color: #FFEBEE;
+    border: 1px solid #FFCDD2;
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    color: #D32F2F;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    line-height: 1.2;
+}
+
+.error-message {
+    color: #EF5350;
+    font-size: 0.875rem;
+    margin-top: -0.5rem;
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.error-message.visible {
+    display: block;
+}
+
+@keyframes button-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="connect-title">Connect to Home Assistant</h2>
+    
+    {% if error_message %}
+    <div class="error-banner">
+        {{ error_message }}
+    </div>
+    {% endif %}
+
+    <form id="urlForm" action="/connect" method="post">
+        <input type="url" id="haUrl" name="haUrl" 
+               placeholder="https://your-home-assistant-url" required>
+        <div id="errorMessage" class="error-message"></div>
+        <button type="submit" class="submit-button" id="submitButton">
+            <span class="button-text">Connect</span>
+            <span class="spinner"></span>
+        </button>
+    </form>
+</div>
+
+<script>
+document.getElementById('urlForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const form = this;
+    const button = document.getElementById('submitButton');
+    const buttonText = button.querySelector('.button-text');
+    const urlInput = document.getElementById('haUrl');
+    const errorMessage = document.getElementById('errorMessage');
+    
+    // Reset any previous error states
+    urlInput.classList.remove('error');
+    errorMessage.classList.remove('visible');
+    errorMessage.textContent = '';
+    
+    // Disable the button and show loading state
+    button.disabled = true;
+    button.classList.add('loading');
+    buttonText.textContent = 'Connecting...';
+
+    try {
+        const response = await fetch('/connect', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams(new FormData(form))
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || 'Failed to connect to Home Assistant');
+        }
+
+        // If successful, let the page redirect
+        window.location.href = '/waiting';
+    } catch (error) {
+        // Show error message
+        urlInput.classList.add('error');
+        errorMessage.textContent = error.message;
+        errorMessage.classList.add('visible');
+        
+        // Re-enable the form
+        button.disabled = false;
+        button.classList.remove('loading');
+        buttonText.textContent = 'Connect';
+    }
+});
+</script>
+{% endblock %}
