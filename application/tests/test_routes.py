@@ -2,7 +2,11 @@
 from configparser import ConfigParser
 from http import HTTPStatus
 
+from unittest.mock import patch
+
 import pytest
+import requests
+
 
 
 def test_config_no_saved_url(client, mock_get_saved_config):
@@ -33,18 +37,21 @@ def test_hass_login(client):
     response = client.get("/hass-login")
 
     assert response.status_code == 200
-    assert b"login.html" in response.data
+    assert b"Connect to Home Assistant" in response.data
 
 
 @pytest.mark.asyncio
-async def test_connect(
+async def test_connect_success(
     app, mock_fetch_access_token, mock_save_to_config, mock_load_dashboard
 ):
     """Test successful connection to Home Assistant."""
     test_url = "http://test.local:8123"
 
-    with app.test_request_context("/connect", method="POST", data={"haUrl": test_url}):
-        response = await app.view_functions["connect"]()
+    with patch('requests.get') as mock_get:
+        mock_get.return_value.status_code = 200
+        
+        with app.test_request_context("/connect", method="POST", data={"haUrl": test_url}):
+            response = await app.view_functions["connect"]()
 
     assert response[1] == HTTPStatus.OK
     mock_fetch_access_token.assert_called_once_with(
@@ -53,6 +60,97 @@ async def test_connect(
     mock_save_to_config.assert_called_once_with("HomeAssistant", "url", test_url, "/tmp")
     assert mock_load_dashboard.call_count == 2
 
+@pytest.mark.asyncio
+async def test_connect_invalid_url(app):
+    """Test connection with invalid URL format."""
+    test_url = "invalid-url"
+
+    with app.test_request_context("/connect", method="POST", data={"haUrl": test_url}):
+        response = await app.view_functions["connect"]()
+
+    assert response[1] == HTTPStatus.BAD_REQUEST
+    assert "valid URL" in response[0]["error"]
+
+@pytest.mark.asyncio
+async def test_connect_unreachable_url(app, mock_load_dashboard):
+    """Test connection when Home Assistant is unreachable."""
+    test_url = "http://test.local:8123"
+
+    with patch('requests.get') as mock_get:
+        mock_get.side_effect = requests.exceptions.ConnectionError()
+        
+        with app.test_request_context("/connect", method="POST", data={"haUrl": test_url}):
+            response = await app.view_functions["connect"]()
+
+    assert response[1] == HTTPStatus.BAD_REQUEST
+    assert "Could not connect" in response[0]["error"]
+    mock_load_dashboard.assert_not_called()
+
+@pytest.mark.asyncio
+async def test_connect_auth_incomplete(app, mock_fetch_access_token, mock_load_dashboard):
+    """Test connection when authentication is not completed."""
+    test_url = "http://test.local:8123"
+
+    with patch('requests.get') as mock_get:
+        mock_get.return_value.status_code = 200
+        mock_fetch_access_token.side_effect = Exception("Unable to fetch token from localStorage")
+        
+        with app.test_request_context("/connect", method="POST", data={"haUrl": test_url}):
+            response = await app.view_functions["connect"]()
+
+    assert response[1] == HTTPStatus.OK
+    mock_load_dashboard.assert_called_with("/hass-login?error=auth_incomplete", local_storage=False)
+
+
+@pytest.mark.asyncio
+async def test_connect_auth_failed(app, mock_fetch_access_token, mock_load_dashboard):
+    """Test connection when authentication fails for other reasons."""
+    test_url = "http://test.local:8123"
+
+    with patch('requests.get') as mock_get:
+        mock_get.return_value.status_code = 200
+        mock_fetch_access_token.side_effect = Exception("Other authentication error")
+        
+        with app.test_request_context("/connect", method="POST", data={"haUrl": test_url}):
+            response = await app.view_functions["connect"]()
+
+    assert response[1] == HTTPStatus.OK
+    mock_load_dashboard.assert_called_with("/hass-login?error=auth_failed", local_storage=False)
+
+@pytest.mark.asyncio
+async def test_connect_unexpected_error(app, mock_load_dashboard):
+    """Test connection when an unexpected error occurs."""
+    test_url = "http://test.local:8123"
+
+    with patch('requests.get') as mock_get:
+        mock_get.return_value.status_code = 200
+        
+        mock_load_dashboard.side_effect = [
+            Exception("Unexpected error"),
+            None  
+        ]
+        
+        with app.test_request_context("/connect", method="POST", data={"haUrl": test_url}):
+            response = await app.view_functions["connect"]()
+
+    assert response[1] == HTTPStatus.OK
+    assert mock_load_dashboard.call_count == 2
+    assert mock_load_dashboard.call_args_list[0][0][0] == test_url
+    assert 'hass-login?error=unexpected' in mock_load_dashboard.call_args_list[1][0][0]
+
+def test_hass_login_with_error(client):
+    """Test hass_login route with error parameter."""
+    response = client.get("/hass-login?error=auth_incomplete")
+
+    assert response.status_code == 200
+    assert b"Authentication was not completed" in response.data
+
+def test_hass_login_with_unexpected_error(client):
+    """Test hass_login route with unexpected error."""
+    response = client.get("/hass-login?error=unexpected")
+
+    assert response.status_code == 200
+    assert b"unexpected error occurred" in response.data
 
 def test_waiting(client):
     """Test waiting route."""
