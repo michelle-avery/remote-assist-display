@@ -1,31 +1,57 @@
-<!-- login.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Configuration Pending</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
-    </style>
-</head>
-<body>
-    <h1>Waiting for configuration...</h1>
-    <p>
-      Device has been registered but requires further configuration.
-    </p>
-    <script>
-        window.addEventListener('pywebviewready', function() {
-            fetch('/hass-config', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-            }).then(response => response.json())
-                .then(data => {
-                    console.log('Response:', data);
-                })
-        })
-    </script>
-</body>
-</html>
+{% extends "base.html" %}
 
+{% block title %}Remote Assist Display - Configuration Pending{% endblock %}
+
+{% block additional_styles %}
+.loading-indicator {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border: 3px solid var(--light-blue);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.container {
+    text-align: center;
+}
+
+.connect-title {
+    color: var(--text-color);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+p {
+    color: var(--text-color);
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="connect-title">Waiting for configuration...</h2>
+    <p>Your device has been registered and is waiting for configuration settings.</p>
+    <div class="loading-indicator"></div>
+</div>
+<script>
+    window.addEventListener('pywebviewready', function() {
+        fetch('/hass-config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        }).then(response => response.json())
+            .then(data => {
+                console.log('Response:', data);
+            })
+    })
+</script>
+{% endblock %}
