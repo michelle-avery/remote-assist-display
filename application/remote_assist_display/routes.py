@@ -117,7 +117,7 @@ def register_routes(app):
 
         except Exception as e:
             current_app.logger.error(f"Unexpected error: {str(e)}", exc_info=True)
-            await load_dashboard(url_for('hass_login', error='unexpected_error'), local_storage=False)
+            await load_dashboard(url_for('hass_login', error='unexpected'), local_storage=False)
             return "", HTTPStatus.OK
 
     @app.route("/waiting", methods=["GET"])
