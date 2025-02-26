@@ -125,7 +125,7 @@ def register_routes(app):
         return render_template("waiting.html")
 
     @app.route("/hass-config", methods=["POST"])
-    def hassconfig():
+    async def hassconfig():
         if "url" not in current_app.config:
             return {"error": "Missing Home Assistant URL"}, HTTPStatus.BAD_REQUEST
 
@@ -137,4 +137,5 @@ def register_routes(app):
             current_app.logger.error(
                 f"Failed to configure Home Assistant: {str(e)}", exc_info=True
             )
+            await load_dashboard(url_for('hass_login', error=str(e)), local_storage=False)
             return {"error": str(e)}, HTTPStatus.INTERNAL_SERVER_ERROR
