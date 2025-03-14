@@ -74,6 +74,7 @@ class RADHideHeaderSwitch(RADEntity, SwitchEntity, RestoreEntity):
                 },
             )
             self._attr_is_on = config_default
+        self.schedule_update_ha_state()
 
     @property
     def is_on(self):
@@ -99,6 +100,7 @@ class RADHideHeaderSwitch(RADEntity, SwitchEntity, RestoreEntity):
         self.display.update_settings(self.hass, data)
         self._data.update(data)
         self.async_write_ha_state()
+        self.schedule_update_ha_state()
 
     async def async_turn_off(self, **kwargs):
         """Turn off the switch."""
@@ -110,6 +112,7 @@ class RADHideHeaderSwitch(RADEntity, SwitchEntity, RestoreEntity):
         self.display.update_settings(self.hass, data)
         self._data.update(data)
         self.async_write_ha_state()
+        self.schedule_update_ha_state()
 
 
 class RADHideSidebarSwitch(RADEntity, SwitchEntity, RestoreEntity):
