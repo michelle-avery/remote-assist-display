@@ -12,7 +12,8 @@
                 "PYTHONPATH": "${workspaceFolder}",
                 "FLASK_DEBUG": "true",
                 "FULLSCREEN": "false",
-                "LOG_LEVEL": "DEBUG"
+                "LOG_LEVEL": "DEBUG",
+                "WEBKIT_DISABLE_COMPOSITING_MODE": "true",
             }
         },
         {
@@ -27,7 +28,8 @@
                 "FLASK_DEBUG": "true",
                 "FULLSCREEN": "false",
                 "LOG_LEVEL": "DEBUG",
-                "WEBVIEW_DEBUG": "true"
+                "WEBVIEW_DEBUG": "true",
+                "WEBKIT_DISABLE_COMPOSITING_MODE": "true",
             }
         },
         {
