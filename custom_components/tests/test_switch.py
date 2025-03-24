@@ -62,19 +62,21 @@ async def test_header_switch_turn_on(mock_coordinator, mock_display):
     )
     
     with patch.object(entity, 'async_write_ha_state') as mock_write_state:
-        await entity.async_turn_on()
-        
-        mock_display.update_settings.assert_called_once_with(
-            entity.hass,
-            {
-                "hide_header": True,
-                "display": {"hide_header": True},
-            }
-        )
-        
-        assert entity.is_on
-        
-        mock_write_state.assert_called_once()
+        with patch.object(entity, 'schedule_update_ha_state') as mock_schedule_update:
+            await entity.async_turn_on()
+            
+            mock_display.update_settings.assert_called_once_with(
+                entity.hass,
+                {
+                    "hide_header": True,
+                    "display": {"hide_header": True},
+                }
+            )
+            
+            assert entity.is_on
+            
+            mock_write_state.assert_called_once()
+            mock_schedule_update.assert_called_once()
 
 async def test_header_switch_turn_off(mock_coordinator, mock_display):
     """Test turning off the switch."""
@@ -85,17 +87,19 @@ async def test_header_switch_turn_off(mock_coordinator, mock_display):
     )
     
     with patch.object(entity, 'async_write_ha_state') as mock_write_state:
-        await entity.async_turn_off()
-        
-        mock_display.update_settings.assert_called_once_with(
-            entity.hass,
-            {
-                "hide_header": False,
-                "display": {"hide_header": False},
-            }
-        )
-        
-        mock_write_state.assert_called_once()
+        with patch.object(entity, 'schedule_update_ha_state') as mock_schedule_update:
+            await entity.async_turn_off()
+            
+            mock_display.update_settings.assert_called_once_with(
+                entity.hass,
+                {
+                    "hide_header": False,
+                    "display": {"hide_header": False},
+                }
+            )
+            
+            mock_write_state.assert_called_once()
+            mock_schedule_update.assert_called_once()
 
 async def test_sidebar_switch_initialization(mock_coordinator, mock_display):
     """Test RADHideSidebarSwitch initialization."""
