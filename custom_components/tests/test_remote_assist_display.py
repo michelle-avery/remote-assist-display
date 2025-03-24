@@ -256,7 +256,7 @@ async def test_event_handling(hass, mock_adders, setup_config_entry_with_event, 
     await hass.async_block_till_done()
     
     # Verify intent sensor was updated
-    intent_sensor.update_from_event.assert_called_once_with(event_data["result"])
+    intent_sensor.update_from_event.assert_called_once_with(event_data["result"], event_data["device_id"])
 
 async def test_event_handling_wrong_device(hass, mock_adders, setup_config_entry_with_event, mock_send):
     """Test events from wrong device are ignored."""

@@ -81,7 +81,7 @@ class RemoteAssistDisplay:
                     event_data,
                 )
                 self.entities.get("intent_sensor").update_from_event(
-                    event_data["result"]
+                    event_data["result"], event_data["device_id"]
                 )
             else:
                 _LOGGER.debug(

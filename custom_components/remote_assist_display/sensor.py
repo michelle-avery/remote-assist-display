@@ -99,9 +99,9 @@ class RADIntentSensor(RADSensor):
         )
 
     @callback
-    def update_from_event(self, result: dict[str, Any]) -> None:
+    def update_from_event(self, result: dict[str, Any], device_id: str = None) -> None:
         """Update the sensor from an event data."""
-        self._attr_extra_state_attributes = {"intent_output": result}
+        self._attr_extra_state_attributes = {"intent_output": result, "device_id": device_id}
         if "speech" in result["response"] and "plain" in result["response"]["speech"]:
             self._attr_native_value = result["response"]["speech"]["plain"].get(
                 "speech", ""
