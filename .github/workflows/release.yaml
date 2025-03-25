@@ -150,6 +150,7 @@ jobs:
       run: |
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Actions"
-        git add VERSION custom_components/remote_assist_display/manifest.json application/build/buildozer.spec application/remote_assist_display/flask_config.py
+        git add VERSION custom_components/remote_assist_display/manifest.json application/remote_assist_display/flask_config.py
+        git add -f. application/build/buildozer.spec
         git commit -m "Bump version to next development version after release"
         git push
