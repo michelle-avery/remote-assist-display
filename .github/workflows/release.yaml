@@ -38,18 +38,6 @@ jobs:
         fi
       id: version
 
-    - name: Get version
-      id: version
-      run: |
-        VERSION=$(cat ../VERSION)
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-        # Remove v prefix from tag
-        TAG_VERSION=${GITHUB_REF#refs/tags/}
-        if [ "$VERSION" != "$TAG_VERSION" ]; then
-          echo "Error: VERSION file ($VERSION) does not match release tag ($TAG_VERSION)"
-          exit 1
-        fi
-
     - name: Update version in files
       run: |
         cd ..
