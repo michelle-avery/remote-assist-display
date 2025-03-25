@@ -22,10 +22,13 @@ jobs:
       with:
         python-version: "3.12"
 
-    - name: Get version
-      id: version
+    - name: Prepare for release
       run: |
-        VERSION=$(cat ../VERSION)
+        cd ..
+        # Strip the -dev suffix if present
+        python3 scripts/update_version.py release
+        # Check what the stripped version is
+        VERSION=$(cat VERSION)
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         # Remove v prefix from tag
         TAG_VERSION=${GITHUB_REF#refs/tags/}
@@ -33,6 +36,7 @@ jobs:
           echo "Error: VERSION file ($VERSION) does not match release tag ($TAG_VERSION)"
           exit 1
         fi
+      id: version
 
     - name: Update version in files
       run: |
@@ -123,3 +127,29 @@ jobs:
           application/dist/remote-assist-display-${{ steps.version.outputs.version }}-alpine-arm64.sha256
           application/build/bin/remote-assist-display-${{ steps.version.outputs.version }}.apk
           application/build/bin/remote-assist-display-${{ steps.version.outputs.version }}.apk.sha256
+  bump-version:
+    needs: build-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.repository.default_branch }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Bump to next development version
+      run: |
+        python scripts/update_version.py bump
+
+    - name: Commit and push
+      run: |
+        git config --local user.email "actions@github.com"
+        git config --local user.name "GitHub Actions"
+        git add VERSION custom_components/remote_assist_display/manifest.json application/build/buildozer.spec application/remote_assist_display/flask_config.py
+        git commit -m "Bump version to next development version after release"
+        git push
