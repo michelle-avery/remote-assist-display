@@ -16,5 +16,5 @@
   "documentation": "https://github.com/michelle-avery/remote-assist-display",
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/michelle-avery/remote-assist-display/issues",
-  "version": "0.2.9-dev"
+  "version": "0.2.9"
 }
