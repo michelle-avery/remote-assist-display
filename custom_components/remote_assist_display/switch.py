@@ -53,8 +53,7 @@ class RADHideHeaderSwitch(RADEntity, SwitchEntity, RestoreEntity):
         if last_state is not None:
             restored_state = last_state.state == "on"
             # Sync the restored state with display
-            self.display.update_settings(
-                self.hass,
+            self.display.settings.update(
                 {
                     "hide_header": restored_state,
                     "display": {"hide_header": restored_state},
@@ -138,8 +137,7 @@ class RADHideSidebarSwitch(RADEntity, SwitchEntity, RestoreEntity):
         if last_state is not None:
             restored_state = last_state.state == "on"
             # Sync the restored state with display
-            self.display.update_settings(
-                self.hass,
+            self.display.settings.update(
                 {
                     "hide_sidebar": restored_state,
                     "display": {"hide_sidebar": restored_state},
