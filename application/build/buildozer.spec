@@ -37,7 +37,7 @@ version = 0.2.8-dev
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = android,python3,certifi,kivy,pywebview,flask[async]==2.3.3,asgiref>=3.2,werkzeug==2.3.7,websockets,environs,requests,pillow,markupsafe==2.1.1,jinja2,itsdangerous,click,blinker,marshmallow,packaging,python-dotenv,proxy-tools,bottle,typing-extensions
+requirements = android,python3,certifi,kivy,git+https://github.com/michelle-avery/pywebview.git@add-fullscreen-support-to-android,flask[async]==2.3.3,asgiref>=3.2,werkzeug==2.3.7,websockets,environs,requests,pillow,markupsafe==2.1.1,jinja2,itsdangerous,click,blinker,marshmallow,packaging,python-dotenv,proxy-tools,bottle,typing-extensions
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -95,16 +95,16 @@ fullscreen = 1
 
 # (list) Permissions
 # (See https://python-for-android.readthedocs.io/en/latest/buildoptions/#build-options-1 for all the supported syntaxes and properties)
-android.permissions = android.permission.WAKE_LOCK, android.permission.INTERNET, (name=android.permission.WRITE_EXTERNAL_STORAGE;maxSdkVersion=18)
+android.permissions = android.permission.WAKE_LOCK, android.permission.INTERNET, android.permission.WRITE_EXTERNAL_STORAGE, android.permission.WRITE_INTERNAL_STORAGE
 
 # (list) features (adds uses-feature -tags to manifest)
 #android.features = android.hardware.usb.host
 
 # (int) Target Android API, should be as high as possible.
-#android.api = 31
+android.api = 34
 
 # (int) Minimum API your APK / AAB will support.
-#android.minapi = 21
+android.minapi = 21
 
 # (int) Android SDK version to use
 #android.sdk = 20
@@ -291,7 +291,7 @@ android.keyalias_password = android
 
 # (list) The Android archs to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
 # In past, was `android.arch` as we weren't supporting builds for multiple archs at the same time.
-android.archs = arm64-v8a, armeabi-v7a
+android.archs = arm64-v8a, armeabi-v7a, x86_64, x86
 
 # (int) overrides automatic versionCode computation (used in build.gradle)
 # this is not the same as app version and should only be edited if you know what you're doing
