@@ -78,6 +78,7 @@ class RADAssistSatelliteSelect(RADEntity, SelectEntity, restore_state.RestoreEnt
         """Change the selected option."""
         self._attr_current_option = option
         self.async_write_ha_state()
+        self.schedule_update_ha_state()
 
     @property
     def satellite_id(self):
