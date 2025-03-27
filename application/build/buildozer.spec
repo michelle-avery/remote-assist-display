@@ -29,7 +29,7 @@ source.exclude_dirs = tests, build, dist, pywebview.egg-info, bin
 source.exclude_patterns = Dockerfile
 
 # (str) Application versioning (method 1)
-version = 0.2.9
+version = 0.2.10
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
