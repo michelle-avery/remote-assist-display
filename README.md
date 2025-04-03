@@ -52,21 +52,22 @@ but removes the need for the user to interact with the display prior to use afte
 ### Installation
 
 #### From Source
-* Clone this repository to your local machine
-* Install the required dependencies. This list is a work in progress, so if you find any missing, please open 
-an [issue](https://github.com/michelle-avery/remote-assist-display/issues)
+* Install the required dependencies. This list is a work in progress, so if you find any missing, please open an [issue](https://github.com/michelle-avery/remote-assist-display/issues)
   * For debian-based systems:
-  `sudo apt-get install pkg-config cmake libcairo2-dev libgirepository1.0-dev 
-  python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-webkit2-4.1 python3-dev`
+    `sudo apt-get install pkg-config cmake libcairo2-dev libgirepository1.0-dev python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-webkit2-4.1 python3-dev git`
   * For Alpine-based systems (including Postmarketos):
-  `sudo apk add g++ cmake pkgconf py3-cairo-dev gobject-introspection-dev python3-dev`
+    `sudo apk add g++ cmake pkgconf py3-cairo-dev gobject-introspection-dev python3-dev git`
   * For all systems:
     * A Python 3.12+ environment
     * [Pipenv](https://pipenv.pypa.io/en/latest/installation.html) (on many systems, this can easily be installed by installing pipx from your package manager, and then running `pipx install pipenv`)
+* Clone this repository to your local machine
+  * `cd ~/`
+  * `git clone https://github.com/michelle-avery/remote-assist-display.git`
+  * `cd remote-assist-display`
 * Run `pipenv install` to install the required Python packages
 * Run the application with `pipenv run python main.py`. If you just see a white screen when the application launches
-  (this will be the  case with  ThinkSmart View devices, and potentially others as well), preface the command with 
-`MESA_GLES_VERSION_OVERRIDE=2.0`
+  (this will be the  case with  ThinkSmart View devices, and potentially others as well), preface the command with MESA_GLES_VERSION_OVERRIDE=2.0`
+  * `MESA_GLES_VERSION_OVERRIDE=2.0 pipenv run python main.py`
 
 ### Running the Standalone Executable
 Standalone executables for the ThinkSmart View (which theoretically should work on any alpine-based arm system) are
