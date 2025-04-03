@@ -63,7 +63,7 @@ but removes the need for the user to interact with the display prior to use afte
 * Clone this repository to your local machine
   * `cd ~/`
   * `git clone https://github.com/michelle-avery/remote-assist-display.git`
-  * `cd remote-assist-display`
+  * `cd remote-assist-display/application/`
 * Run `pipenv install` to install the required Python packages
 * Run the application with `pipenv run python main.py`. If you just see a white screen when the application launches
   (this will be the  case with  ThinkSmart View devices, and potentially others as well), preface the command with MESA_GLES_VERSION_OVERRIDE=2.0`
