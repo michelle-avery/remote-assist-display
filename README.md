@@ -2,16 +2,13 @@
 This project is meant to be an alternative to browser_mod for building dashboards
 controllable from Home Assistant, specifically for use with [ViewAssist](https://dinki.github.io/View-Assist/),
 but it's effectively a remotely controllable browser.
-*It is currently under heavy development and not ready for production use.*
 
 The project consists of two components - the Custom Component in [custom_components](/custom_components) and the gui 
-app in [application](/application).
+app in [application](/application). In order to effectively use RAD, you'll need to install BOTH components. Below are the recommended
+methods of installing the application, but for alternatives, see the [alternative installation directions](/docs/alternative_installation_directions.md).
 
-## The Remote Assist Display Custom Component
-The custom component should be installed in your Home Assistant instance prior to installing the GUI application.
-
-### Installation
-#### With HACS
+## QuickStart
+### Install the Integration With HACS
 * Install [HACS](https://hacs.xyz/docs/use/) if you have not already
 * Click 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.
@@ -20,39 +17,25 @@ The custom component should be installed in your Home Assistant instance prior t
 to add this as a custom repository, or add it manually.
 * Click "Add" to confirm, and then click "Download" to download and install the integration
 * Restart Home Assistant
+* After the reboot, add the integration via the integrations dashboard or click here: [![Open](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=remote_assist_display). 
 
-#### Manual Installation
-* Copy the contents of [custom_components/remote_assist_display](/custom_components/remote_assist_display) to 
-`config/custom_components/remote_assist_display` in your Home Assistant instance
-* Restart Home Assistant
-
-#### For development
-* Clone this repository to your local machine, and mount the `custom_components/remote_assist_display` directory 
-to `config/custom_components/remote_assist_display` in your Home Assistant instance by adding a mount in your 
-devcontainer.json file like this (make sure to change the source to match your environment):
-```json
-  "mounts": [
-      "source=${localENV:HOME}/remote-assist-display/custom_components/remote_assist_display,target=${containerWorkspaceFolder}/config/custom_components/remote_assist_display,type=bind"
-  ]
-```
-#### Completing the installation
-Once the component is in place, add it via the integrations dashboard or click here: [![Open](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=remote_assist_display). 
 It's possible to set default dashboards on a per-device basis, but if you'd like to use the default dashboard on all of your devices,
 you can sest that now from the integration's configuration page. Otherwise, new devices added will default to using the default
 lovelace dashboard, and can be individually changed.
 
-By default, each device will store its unique id in the `browser_mod-browser-id` key of the browser's local storage. This is intended for ease of compatibility  with ViewAssist, but if you are also using browser mod, and you wish to change this, you can change this default value as well in the configuration, or on a per-system basis. 
-    
-## The Remote Assist Display GUI Application
-The GUI application is a Python application that uses Pywebview to display a web page in a window. The application 
-connects to HomeAssistant and accepts commands to navigate to different dashboards within home assistant, or different 
-URLs altogether. Compared to using the similar browser_mod approach, Remote Assist Display requires more initial setup, 
-but removes the need for the user to interact with the display prior to use after a restart.
+### Install the Remote Assist Display GUI Application
+The method you using to install the GUI application on your device depends
+on the operating system. If your system is running an Android-based operating system (ie, 
+Android, Lineage, etc.), use the "From APK" section. If your system is running a 
+Linux-based operating system (ie, Ubuntu, raspbian, postmarketos, etc.), use the "From 
+Source" section. Once installation is complete, continue to the "Configuration" section.
 
-### Installation
+#### From APK
+* From your Android device, download the latest apk from the (releases)[https://github.com/michelle-avery/remote-assist-display/releases] page.
+* Install the apk. You may need to enable "Install from Unknown Sources" in your device's settings.
 
 #### From Source
-* Install the required dependencies. This list is a work in progress, so if you find any missing, please open an [issue](https://github.com/michelle-avery/remote-assist-display/issues)
+* Install the required dependencies.
   * For debian-based systems:
     `sudo apt-get install pkg-config cmake libcairo2-dev libgirepository1.0-dev python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-webkit2-4.1 python3-dev git`
   * For Alpine-based systems (including Postmarketos):
@@ -65,31 +48,10 @@ but removes the need for the user to interact with the display prior to use afte
   * `git clone https://github.com/michelle-avery/remote-assist-display.git`
   * `cd remote-assist-display/application/`
 * Run `pipenv install` to install the required Python packages
-* Run the application with `pipenv run python main.py`. If you just see a white screen when the application launches
-  (this will be the  case with  ThinkSmart View devices, and potentially others as well), preface the command with MESA_GLES_VERSION_OVERRIDE=2.0`
-  * `MESA_GLES_VERSION_OVERRIDE=2.0 pipenv run python main.py`
-
-### Running the Standalone Executable
-Standalone executables for the ThinkSmart View (which theoretically should work on any alpine-based arm system) are
-published with each release. Just download the file, make sure it's executable with `chmod +x remote-assist-display-app`,
-and run it.
-
-### Creating a Standalone Executable for the ThinkSmart View
-The ThinkSmart View devices have become popular for applications like this due to their currently low price point.
-These devices can also be flashed to run PostmarketOS, which allows for more flexibility in the applications that can
-be installed. Given the limited disk space on these devices, and the additional dependencies needed, however, this
-project provides the ability to create a standalone executable that can be run on the device without needing to install
-dependencies, check out the repository, etc. This will eventually be published with each release, but if you'd like to
-create your own in the interim, and you have docker installed on a workstation:
-* Clone this repository to your local machine
-* The ThinkSmart Views run on ARM processors, so assuming your workstation is x86, you'll need to enable quemu
-  emulation. This can be done by running `docker run --rm --privileged multiarch/qemu-user-static --reset -p yes`
-* Run `docker build --platform linux/arm64 . -t rad-builder` to build the builder image
-* From the application directory, run `docker run --rm -v $(pwd):/usr/src/app --platform linux/arm64 rad-builder` 
-to build the standalone executable. This will create a file called `remote-assist-display-app` in the `dist` directory under
-your current directory.
-* Copy the `remote_assist_display` file to your ThinkSmart View device, and run it with 
-`MESA_GLES_VERSION_OVERRIDE=2.0 ./remote-assist-display-app`
+* Run the application with `pipenv run python main.py`. If you just see a white screen when 
+the application launches (this will be the  case with  ThinkSmart View devices, and 
+potentially others as well), preface the command with `MMESA_GLES_VERSION_OVERRIDE=2.0`
+* See [here](/docs/start-rad.sh) for a script that can be used to start the application with the correct parameters.
 
 ### Configuration
 * When the application starts up for the first time, it will prompt you to enter the URL of your Home Assistant 
