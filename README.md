@@ -28,11 +28,10 @@ The method you using to install the GUI application on your device depends
 on the operating system. If your system is running an Android-based operating system (ie, 
 Android, Lineage, etc.), use the "From APK" section. If your system is running a 
 Linux-based operating system (ie, Ubuntu, raspbian, postmarketos, etc.), use the "From 
-Source" section.
+Source" section. Once installation is complete, continue to the "Configuration" section.
 
 #### From APK
-* From your Android device, download the latest apk from the (releases)[https://github.com/
-michelle-avery/remote-assist-display/releases] page.
+* From your Android device, download the latest apk from the (releases)[https://github.com/michelle-avery/remote-assist-display/releases] page.
 * Install the apk. You may need to enable "Install from Unknown Sources" in your device's settings.
 
 #### From Source
