@@ -24,7 +24,7 @@ def register_routes(app):
                 "HomeAssistant", "url", fallback=None
             )
             last_id = saved_config.get("HomeAssistant", "unique_id", fallback=None)
-            if last_id and last_id not in current_app.config["UNIQUE_ID"]:
+            if last_id and last_id != current_app.config["UNIQUE_ID"]:
                 current_app.logger.debug(
                     "Last used ID %s does not match current device's ID %s, using previous ID instead.",
                     last_id,
