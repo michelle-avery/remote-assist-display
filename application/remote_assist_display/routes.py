@@ -23,6 +23,23 @@ def register_routes(app):
             current_app.config["url"] = saved_config.get(
                 "HomeAssistant", "url", fallback=None
             )
+            last_id = saved_config.get("HomeAssistant", "unique_id", fallback=None)
+            if last_id and last_id != current_app.config["UNIQUE_ID"]:
+                current_app.logger.debug(
+                    "Last used ID %s does not match current device's ID %s, using previous ID instead.",
+                    last_id,
+                    current_app.config["UNIQUE_ID"],
+                )
+                current_app.config["UNIQUE_ID"] = last_id
+            else:
+                save_to_config(
+                    "HomeAssistant",
+                    "unique_id",
+                    current_app.config["UNIQUE_ID"], 
+                    current_app.config["CONFIG_DIR"]
+                )
+                
+
             current_app.logger.debug(f"Found configured URL: {current_app.config['url']}")
             if current_app.config["url"]:
                 # Todo: handle cases where we have a saved url, but no valid credentials
@@ -111,6 +128,13 @@ def register_routes(app):
                 return "", HTTPStatus.OK  # Return OK since we handled the navigation
             # Save the URL to our config file
             save_url(url)
+            # Save the unique ID to our config file
+            save_to_config(
+                "HomeAssistant",
+                "unique_id",
+                current_app.config["UNIQUE_ID"],
+                current_app.config["CONFIG_DIR"]
+            )
             current_app.logger.debug("Redirecting to waiting page")
             await load_dashboard(url_for("waiting"), local_storage=False)
             return "", HTTPStatus.OK

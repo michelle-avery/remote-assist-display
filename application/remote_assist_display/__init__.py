@@ -8,6 +8,7 @@ from flask import Flask
 
 from .flask_config import Config
 
+
 class TokenMaskingFilter(logging.Filter):
     # Match any JWT token format (three base64url-encoded sections separated by dots)
     JWT_PATTERN = r'([a-zA-Z0-9_-]+\.){2}[a-zA-Z0-9_-]+'
@@ -60,7 +61,7 @@ def create_app():
     app.logger.info("=" * 80)
     app.logger.info(f"Remote Assist Display v{app.config['VERSION']}")
     app.logger.info("-" * 80)
-    app.logger.info(f"Unique ID: {app.config['UNIQUE_ID']}")
+    app.logger.info(f"Detected Unique ID: {app.config['UNIQUE_ID']}")
     app.logger.info(f"Running on Android: {app.config['IS_ANDROID']}")
     app.logger.info(f"Frozen executable: {app.config['IS_FROZEN']}")
     app.logger.info(f"Log dir.: {logs_dir}")
