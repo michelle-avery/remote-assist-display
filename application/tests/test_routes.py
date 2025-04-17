@@ -1,12 +1,10 @@
 # test_routes.py
 from configparser import ConfigParser
 from http import HTTPStatus
-
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 import pytest
 import requests
-
 
 
 def test_config_no_saved_url(client, mock_get_saved_config):
@@ -57,7 +55,11 @@ async def test_connect_success(
     mock_fetch_access_token.assert_called_once_with(
         app=app, url=test_url, retries=app.config["TOKEN_RETRY_LIMIT"], delay=10
     )
-    mock_save_to_config.assert_called_once_with("HomeAssistant", "url", test_url, "/tmp")
+    assert mock_save_to_config.call_count == 2
+    mock_save_to_config.assert_has_calls([
+        call("HomeAssistant", "url", test_url, "/tmp"),
+        call("HomeAssistant", "unique_id", "remote-assist-display-112233445566-test-hostname", "/tmp")
+    ])
     assert mock_load_dashboard.call_count == 2
 
 @pytest.mark.asyncio
