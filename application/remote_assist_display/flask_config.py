@@ -45,7 +45,7 @@ def get_local_dir(is_android: bool, is_frozen: bool) -> str:
     
 class Config(object):
     env = Env()
-    VERSION = "0.2.10"
+    VERSION = "0.2.11"
     # Logging and debug settings
     LOG_LEVEL = env.str("LOG_LEVEL", "INFO").upper()
     FLASK_DEBUG = env.bool("FLASK_DEBUG", False)
