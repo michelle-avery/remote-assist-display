@@ -58,7 +58,14 @@ async def async_setup(hass: HomeAssistant, config: ConfigType):
                     "custom_components/remote_assist_display/remote_assist_display.js"
                 ),
                 True,
-            )
+            ),
+            StaticPathConfig(
+                "/rad-cxp",
+                hass.config.path(
+                    "custom_components/remote_assist_display/redirect.html"
+                ),
+                True,
+            ),
         ]
     )
     add_extra_js_url(hass, FRONTEND_SCRIPT_URL + "?" + version)
