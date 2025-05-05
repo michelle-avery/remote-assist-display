@@ -11,10 +11,6 @@ on:
 jobs:
   test-custom-component:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./custom_components
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
