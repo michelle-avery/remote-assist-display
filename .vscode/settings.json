@@ -1,7 +1,6 @@
 {
     "python.testing.pytestArgs": [
-        "custom_components/tests",
-        "application/tests"
+        "tests",
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true
