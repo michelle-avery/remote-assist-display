@@ -12,14 +12,16 @@ from .const import (
     NAVIGATE_URL_SERVICE,
     NAVIGATE_URL_WS_COMMAND,
     NAVIGATE_WS_COMMAND,
+    REFRESH_SERVICE,
+    REFRESH_WS_COMMAND,
 )
 
 NAVIGATE_URL_SCHEMA = vol.Schema(
     {
-        vol.Optional("target"): cv.ensure_list, 
-        vol.Optional("device_id"): cv.ensure_list, 
-        vol.Required("url"): cv.string
-     }
+        vol.Optional("target"): cv.ensure_list,
+        vol.Optional("device_id"): cv.ensure_list,
+        vol.Required("url"): cv.string,
+    }
 )
 
 NAVIGATE_SCHEMA = vol.Schema(
@@ -27,6 +29,13 @@ NAVIGATE_SCHEMA = vol.Schema(
         vol.Optional("target"): cv.ensure_list,
         vol.Optional("device_id"): cv.ensure_list,
         vol.Required("path"): cv.string,
+    }
+)
+
+REFRESH_SCHEMA = vol.Schema(
+    {
+        vol.Optional("target"): cv.ensure_list,
+        vol.Optional("device_id"): cv.ensure_list,
     }
 )
 
@@ -60,7 +69,9 @@ async def _get_display_for_target(hass, target):
     return display_id, display
 
 
-async def _process_targets(hass, targets, command, **command_args):
+async def _process_targets(
+    hass, targets, command, minimum_version=None, **command_args
+):
     """Process multiple targets with a given command.
 
     Args:
@@ -68,7 +79,7 @@ async def _process_targets(hass, targets, command, **command_args):
         targets: List of target device identifiers
         command: WebSocket command to send
         command_args: Additional arguments for the command
-
+        minimum_version: Optional minimum version required for the command
     Returns:
         dict: Response containing success status and results
     """
@@ -77,9 +88,29 @@ async def _process_targets(hass, targets, command, **command_args):
     for target in targets:
         try:
             display_id, display = await _get_display_for_target(hass, target)
+            display_version = display.data.get("client_version")
+
+            if minimum_version:
+                if not display_version:
+                    results.append(
+                        {
+                            "target": target,
+                            "status": "error",
+                            "error": f"Display version not found for {target}, minimum version required {minimum_version}",
+                        }
+                    )
+                    continue
+                if display_version < minimum_version:
+                    results.append(
+                        {
+                            "target": target,
+                            "status": "error",
+                            "error": f"Display version {display_version} is below required {minimum_version}",
+                        }
+                    )
+                    continue
 
             hass.create_task(display.send(command, **command_args))
-
             results.append(
                 {"target": target, "status": "success", "display_id": display_id}
             )
@@ -91,6 +122,7 @@ async def _process_targets(hass, targets, command, **command_args):
         "success": all(r["status"] == "success" for r in results),
         "results": results,
     }
+
 
 @callback
 def async_setup_services(hass) -> None:
@@ -105,6 +137,8 @@ def async_setup_services(hass) -> None:
                 return await navigate_url(service_call)
             if service == NAVIGATE_SERVICE:
                 return await navigate(service_call)
+            if service == REFRESH_SERVICE:
+                return await refresh(service_call)
         except ValueError as e:
             return {"success": False, "error": str(e)}
 
@@ -126,10 +160,35 @@ def async_setup_services(hass) -> None:
             path=service_call.data.get("path"),
         )
 
+    async def refresh(service_call):
+        """Refresh the display."""
+        return await _process_targets(
+            hass=hass,
+            targets=service_call.data.get("target", service_call.data.get("device_id")),
+            command=REFRESH_WS_COMMAND,
+            minimum_version="1.1.0",
+        )
+
     hass.services.async_register(
-        DOMAIN, NAVIGATE_URL_SERVICE, async_call_rad_service, schema=NAVIGATE_URL_SCHEMA, supports_response=SupportsResponse.OPTIONAL
+        DOMAIN,
+        NAVIGATE_URL_SERVICE,
+        async_call_rad_service,
+        schema=NAVIGATE_URL_SCHEMA,
+        supports_response=SupportsResponse.OPTIONAL,
     )
 
     hass.services.async_register(
-        DOMAIN, NAVIGATE_SERVICE, async_call_rad_service, schema=NAVIGATE_SCHEMA, supports_response=SupportsResponse.OPTIONAL
+        DOMAIN,
+        NAVIGATE_SERVICE,
+        async_call_rad_service,
+        schema=NAVIGATE_SCHEMA,
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+
+    hass.services.async_register(
+        DOMAIN,
+        REFRESH_SERVICE,
+        async_call_rad_service,
+        schema=REFRESH_SCHEMA,
+        supports_response=SupportsResponse.OPTIONAL,
     )

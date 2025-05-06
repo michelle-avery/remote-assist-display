@@ -116,3 +116,52 @@ async def test_url_service_call_with_invalid_target_fails(hass: HomeAssistant, s
     )
 
     assert response["success"] is False
+
+async def test_refresh_service_with_no_display_version_fails(hass: HomeAssistant, mock_device, mock_display, setup_services):
+    """Test refresh service fails with unsupported display."""
+    hass.data[DOMAIN] = {"displays": {mock_device.name: mock_display}}
+    mock_display.data.get.return_value = None  # Simulate unsupported display version
+    response = await hass.services.async_call(
+        DOMAIN,
+        "refresh",
+        service_data={
+            "target": [mock_device.id]
+        },
+        blocking=True,
+        return_response=True 
+    )
+    
+    assert response["success"] is False
+    assert response["results"][0]["error"] == f"Display version not found for {mock_device.id}, minimum version required 1.1.0"
+
+async def test_refresh_service_with_unsupported_display_version_fails(hass: HomeAssistant, mock_device, mock_display, setup_services):
+    """Test refresh service fails with unsupported display version."""
+    hass.data[DOMAIN] = {"displays": {mock_device.name: mock_display}}
+    mock_display.data.get.return_value = "1.0.0+3"
+    response = await hass.services.async_call(
+        DOMAIN,
+        "refresh",
+        service_data={
+            "target": [mock_device.id]
+        },
+        blocking=True,
+        return_response=True 
+    )
+    assert response["success"] is False
+    assert response["results"][0]["error"] == f"Display version {mock_display.data.get.return_value} is below required 1.1.0"
+
+async def test_refresh_service_with_supported_display_succeeds(hass: HomeAssistant, mock_device, mock_display, setup_services):
+    """Test refresh service succeeds with supported display."""
+    hass.data[DOMAIN] = {"displays": {mock_device.name: mock_display}}
+    mock_display.data.get.return_value = "1.2.0+3"
+    response = await hass.services.async_call(
+        DOMAIN,
+        "refresh",
+        service_data={
+            "target": [mock_device.id]
+        },
+        blocking=True,
+        return_response=True 
+    )
+
+    assert response["success"] is True
