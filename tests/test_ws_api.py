@@ -281,3 +281,25 @@ async def test_update_command_merges_data(
 
     assert display.data["existing_key"] == "existing_value"
     assert display.data["display"]["current_url"] == test_url
+
+async def test_update_command_updates_client_version(
+    hass: HomeAssistant,
+    init_integration,
+    ws_client,
+) -> None:
+    """Test update command updates client version."""
+    test_version = "1.0.0"
+    await ws_client.send_json({
+        "id": 1,
+        "type": UPDATE_WS_COMMAND,
+        "display_id": "test-display-id",
+        "data": {
+            "client_version": test_version
+        }
+    })
+
+    msg = await ws_client.receive_json()
+    assert msg["success"]
+
+    display = get_or_register_display(hass, "test-display-id")
+    assert display.data["client_version"] == test_version

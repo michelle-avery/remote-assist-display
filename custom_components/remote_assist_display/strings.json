@@ -47,6 +47,16 @@
                     "description": "The path of the dashboard to navigate to."
                 }
             }
+        },
+        "refresh": {
+            "name": "Refresh",
+            "description": "Refresh the remote assist display.",
+            "fields": {
+                "target": {
+                    "name": "Target",
+                    "description": "The target device."
+                }
+            }
         }
     }
 }

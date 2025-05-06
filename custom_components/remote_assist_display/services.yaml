@@ -40,3 +40,18 @@ navigate:
       required: true
       selector:
           text:
+refresh:
+  name: Refresh the target device
+  description: >
+    This service allows you to refresh the target device.
+  fields:
+    target:
+      name: Target
+      description: The device to refresh.
+      example: "remote_assist_display.living_room"
+      required: true
+      selector:
+        device:
+          multiple: true
+          filter:
+            - integration: remote_assist_display
