@@ -3,7 +3,7 @@ This project is meant to be an alternative to browser_mod for building dashboard
 controllable from Home Assistant, specifically for use with [ViewAssist](https://dinki.github.io/View-Assist/).
 
 The project consists of two components - the Custom Component in [custom_components](/custom_components) and the gui 
-[app](https://github.com/michelle-avery/rad-cross-platform/). In order to effectively use RAD, you'll need to install BOTH components. The application directory still contains an older version of the app which will soon be deprecated. Below are the recommended
+[app](https://github.com/michelle-avery/rad-cross-platform/). In order to effectively use RAD, you'll need to install BOTH components. Below are the recommended
 methods of installing the Home Assistant integration, but for alternatives, see the [alternative installation directions](/docs/alternative_installation_directions.md). For instructions on installing the application, please refer to that repo.
 
 ## QuickStart
