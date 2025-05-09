@@ -27,8 +27,13 @@ _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
 
-PLATFORMS = [Platform.SELECT, Platform.SENSOR, Platform.SWITCH, Platform.TEXT]
-
+PLATFORMS = [
+    Platform.SELECT,
+    Platform.SENSOR,
+    Platform.SWITCH,
+    Platform.TEXT,
+    Platform.LIGHT,
+]
 
 def get_version(hass: HomeAssistant):
     """Get the version of the Remote Assist Display integration."""
@@ -38,7 +43,6 @@ def get_version(hass: HomeAssistant):
     with path.open(encoding="utf-8") as fp:
         manifest = json.load(fp)
         return manifest["version"]
-
 
 async def async_setup(hass: HomeAssistant, config: ConfigType):
     """Set up the Remote Assist Display component."""
@@ -72,7 +76,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType):
 
     return True
 
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up Remote Assist Display Controller from a config entry."""
     hass.data[DOMAIN][DATA_CONFIG_ENTRY] = entry
@@ -89,7 +92,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     entry.async_on_unload(entry.add_update_listener(_handle_config_update))
     return True
-
 
 async def async_remove_config_entry_device(
     hass: HomeAssistant,
