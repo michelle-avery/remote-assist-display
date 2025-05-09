@@ -6,8 +6,10 @@ from homeassistant.components.websocket_api import event_message
 from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers import device_registry, entity_registry
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from packaging.version import parse as parse_version
 
-from .const import DATA_ADDERS, DATA_CONFIG_ENTRY, DATA_DISPLAYS, DOMAIN
+from .const import DATA_ADDERS, DATA_CONFIG_ENTRY, DATA_DISPLAYS, DOMAIN, MIN_VERSION_BACKLIGHT
+from .light import RADBacklightLight
 from .select import RADAssistSatelliteSelect
 from .sensor import RADIntentSensor, RADSensor
 from .switch import RADHideHeaderSwitch, RADHideSidebarSwitch
@@ -177,6 +179,37 @@ class RemoteAssistDisplay:
             new = RADHideSidebarSwitch(coordinator, display_id, self)
             adder([new])
             self.entities["hide_sidebar"] = new
+
+        # Add light entity for backlight control if client version supports it
+        client_version = self.data.get("client_version")
+        if "light" not in self.entities and client_version and client_version != "unknown":
+            try:
+                if parse_version(client_version) >= parse_version(MIN_VERSION_BACKLIGHT):
+                    _LOGGER.debug(
+                        f"Client version {client_version} supports backlight control for {display_id}. Adding light entity."
+                    )
+                    adder = hass.data[DOMAIN][DATA_ADDERS]["light"]
+                    new_light = RADBacklightLight(coordinator, display_id, self)
+                    adder([new_light])
+                    self.entities["light"] = new_light
+                else:
+                    _LOGGER.debug(
+                        f"Client version {client_version} does not support backlight control for {display_id} (requires {MIN_VERSION_BACKLIGHT})."
+                    )
+            except Exception as e:
+                _LOGGER.error(
+                    f"Error parsing client_version for backlight entity for {display_id}: {client_version}, {e}"
+                )
+        elif "light" in self.entities and \
+             (not client_version or client_version == "unknown" or \
+              (client_version and parse_version(client_version) < parse_version(MIN_VERSION_BACKLIGHT))):
+            _LOGGER.debug(
+                f"Client version {client_version} no longer supports backlight for {display_id} or version unknown. Removing light entity."
+            )
+            er = entity_registry.async_get(hass)
+            if self.entities["light"].entity_id:
+                er.async_remove(self.entities["light"].entity_id)
+            del self.entities["light"]
 
     @callback
     async def send(self, command, **kwargs):

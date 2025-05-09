@@ -22,3 +22,5 @@ DEFAULT_HOME_ASSISTANT_DASHBOARD = "lovelace"
 DEFAULT_DEVICE_NAME_STORAGE_KEY = "browser_mod-browser-id"
 DATA_CONFIG_ENTRY = "config_entry"
 FRONTEND_SCRIPT_URL = "/remote_assist_display/remote_assist_display"
+
+MIN_VERSION_BACKLIGHT = "1.2.0"
